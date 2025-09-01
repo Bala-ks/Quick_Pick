@@ -1,791 +1,555 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Where Is My Worker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Add Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Roboto', sans-serif;
-        }
-
-        body {
-            background-color: #f5f5f5;
-            color: #333;
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        /* App Bar */
-        .app-bar {
-            background-color: #1976D2;
-            color: white;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .app-title {
-            font-weight: 700;
-            font-size: 20px;
-        }
-
-        .app-bar-icon {
-            color: white;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
-
-        /* Worker Card */
-        .worker-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 16px;
-            overflow: hidden;
-        }
-
-        .card-content {
-            padding: 12px;
-            display: flex;
-        }
-
-        .worker-image {
-            width: 100px;
-            height: 120px;
-            border-radius: 8px;
-            object-fit: cover;
-            background-color: #e0e0e0;
-        }
-
-        .worker-info {
-            flex: 1;
-            margin-left: 12px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .worker-name {
-            font-weight: 700;
-            font-size: 18px;
-            margin-bottom: 8px;
-        }
-
-        .worker-profession {
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .chips-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .chip {
-            background-color: #f5f5f5;
-            border-radius: 16px;
-            padding: 4px 8px;
-            display: flex;
-            align-items: center;
-            font-size: 12px;
-        }
-
-        .chip-icon {
-            font-size: 16px;
-            margin-right: 4px;
-        }
-
-        .buttons-container {
-            display: flex;
-            gap: 8px;
-        }
-
-        .button {
-            flex: 1;
-            padding: 8px;
-            border-radius: 4px;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .details-button {
-            background-color: #2196F3;
-            color: white;
-        }
-
-        .book-button {
-            background-color: #1976D2;
-            color: white;
-        }
-
-        .button-icon {
-            font-size: 18px;
-            margin-right: 4px;
-        }
-
-        /* Bottom Navigation */
-        .bottom-nav {
-            display: flex;
-            background-color: white;
-            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-item {
-            flex: 1;
-            padding: 12px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            text-decoration: none;
-            font-size: 12px;
-        }
-
-        .nav-item.active {
-            color: #1976D2;
-        }
-
-        .nav-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-
-        /* Drawer */
-        .drawer {
-            position: fixed;
-            top: 0;
-            left: -300px;
-            width: 300px;
-            height: 100%;
-            background-color: white;
-            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
-            transition: left 0.3s;
-            z-index: 1000;
-        }
-
-        .drawer.open {
-            left: 0;
-        }
-
-        .drawer-header {
-            background-color: #1976D2;
-            padding: 16px;
-            height: 160px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-
-        .user-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
-            background-color: white;
-            margin-bottom: 10px;
-        }
-
-        .user-name {
-            color: white;
-            font-size: 18px;
-        }
-
-        .drawer-item {
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-        }
-
-        .drawer-icon {
-            margin-right: 16px;
-            color: #666;
-        }
-
-        .drawer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
-        }
-
-        .drawer-overlay.open {
-            display: block;
-        }
-
-        /* Loading and Empty States */
-        .loading-container, .empty-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-        }
-
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #1976D2;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .empty-text {
-            color: #666;
-            font-size: 18px;
-            margin-top: 16px;
-        }
-
-        /* Location Permission */
-        .location-permission {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 16px;
-            text-align: center;
-        }
-
-        .enable-location-btn {
-            background-color: #1976D2;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            margin-top: 16px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickDeals - Marketplace</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    body {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    /* App Bar */
+    .app-bar {
+      background-color: #1976D2;
+      color: white;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .app-title {
+      font-weight: 700;
+      font-size: 20px;
+    }
+    .app-bar-icon {
+      color: white;
+      cursor: pointer;
+    }
+    /* Search Bar */
+    .search-container {
+      padding: 12px 16px;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .search-bar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #f0f0f0;
+      border-radius: 8px;
+      padding: 8px 16px;
+      margin-right: 10px;
+    }
+    .search-bar input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 4px 8px;
+      font-size: 16px;
+      outline: none;
+    }
+    /* Categories */
+    .categories {
+      display: flex;
+      overflow-x: auto;
+      padding: 16px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      scrollbar-width: none; /* Firefox */
+    }
+    .categories::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Edge */
+    }
+    .category {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 80px;
+      margin-right: 16px;
+    }
+    .category-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      color: #1976D2;
+    }
+    .category-name {
+      font-size: 12px;
+      text-align: center;
+      color: #666;
+    }
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 16px 0;
+      color: #333;
+    }
+    /* Product Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    /* Product Card */
+    .product-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+    }
+    .product-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+    .product-details {
+      padding: 12px;
+    }
+    .product-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .product-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1976D2;
+      margin-bottom: 4px;
+    }
+    .product-location {
+      font-size: 12px;
+      color: #666;
+      display: flex;
+      align-items: center;
+    }
+    .product-actions {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      border-top: 1px solid #f0f0f0;
+    }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      color: #1976D2;
+      font-size: 13px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    /* Bottom Navigation */
+    .bottom-nav {
+      display: flex;
+      background-color: white;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+    .nav-item {
+      flex: 1;
+      padding: 12px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      text-decoration: none;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .nav-item.active {
+      color: #1976D2;
+    }
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+    /* Drawer */
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      width: 250px;
+      height: 100%;
+      background-color: white;
+      box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+      transition: left 0.3s;
+      z-index: 1000;
+    }
+    .drawer.open { left: 0; }
+    .drawer-header {
+      background-color: #1976D2;
+      padding: 16px;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .drawer-item {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .drawer-icon {
+      margin-right: 12px;
+      color: #666;
+    }
+    .drawer-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 999;
+      display: none;
+    }
+    .drawer-overlay.open { display: block; }
+    /* Add button */
+    .add-button {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #1976D2;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      cursor: pointer;
+      z-index: 100;
+    }
+  </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- App Bar -->
-        <div class="app-bar">
-            <span class="material-icons app-bar-icon" id="menu-button">menu</span>
-            <span class="app-title">Where Is My Worker</span>
-            <span class="material-icons app-bar-icon" id="search-button">search</span>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content" id="main-content">
-            <!-- Content will be dynamically loaded here -->
-        </div>
-
-        <!-- Bottom Navigation -->
-        <div class="bottom-nav">
-            <a href="#" class="nav-item active" data-page="home">
-                <span class="material-icons nav-icon">home</span>
-                <span>Home</span>
-            </a>
-            <a href="#" class="nav-item" data-page="categories">
-                <span class="material-icons nav-icon">category</span>
-                <span>Categories</span>
-            </a>
-            <a href="#" class="nav-item" data-page="jobs">
-                <span class="material-icons nav-icon">work</span>
-                <span>My Jobs</span>
-            </a>
-            <a href="#" class="nav-item" data-page="history">
-                <span class="material-icons nav-icon">history</span>
-                <span>History</span>
-            </a>
-            <a href="#" class="nav-item" data-page="profile">
-                <span class="material-icons nav-icon">person</span>
-                <span>Profile</span>
-            </a>
-        </div>
+  <div class="app-container">
+    <!-- App Bar -->
+    <div class="app-bar">
+      <span class="material-icons app-bar-icon" id="menu-button">menu</span>
+      <span class="app-title">QuickDeals</span>
+      <span class="material-icons app-bar-icon" id="cart-button">shopping_cart</span>
     </div>
 
-    <!-- Drawer -->
-    <div class="drawer" id="drawer">
-        <div class="drawer-header">
-            <div class="user-avatar" id="user-avatar"></div>
-            <div class="user-name" id="user-name">Guest</div>
-        </div>
-        <div class="drawer-item">
-            <span class="material-icons drawer-icon">settings</span>
-            <span>Settings</span>
-        </div>
-        <div class="drawer-item" id="logout-button">
-            <span class="material-icons drawer-icon">logout</span>
-            <span>Logout</span>
-        </div>
+    <!-- Search Bar -->
+    <div class="search-container">
+      <div class="search-bar">
+        <span class="material-icons">search</span>
+        <input type="text" placeholder="Search for products...">
+      </div>
+      <span class="material-icons" style="color: #1976D2;">tune</span>
     </div>
-    <div class="drawer-overlay" id="drawer-overlay"></div>
 
-    <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+    <!-- Categories -->
+    <div class="categories">
+      <div class="category">
+        <div class="category-icon">
+          <span class="material-icons">smartphone</span>
+        </div>
+        <div class="category-name">Electronics</div>
+      </div>
+      <div class="category">
+        <div class="category-icon">
+          <span class="material-icons">directions_car</span>
+        </div>
+        <div class="category-name">Vehicles</div>
+      </div>
+      <div class="category">
+        <div class="category-icon">
+          <span class="material-icons">home</span>
+        </div>
+        <div class="category-name">Property</div>
+      </div>
+      <div class="category">
+        <div class="category-icon">
+          <span class="material-icons">checkroom</span>
+        </div>
+        <div class="category-name">Fashion</div>
+      </div>
+      <div class="category">
+        <div class="category-icon">
+          <span class="material-icons">pets</span>
+        </div>
+        <div class="category-name">Animals</div>
+      </div>
+      <div class="category">
+        <div class="category-icon">
+          <span class="material-icons">construction</span>
+        </div>
+        <div class="category-name">Services</div>
+      </div>
+    </div>
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+      <h2 class="section-title">Featured Products</h2>
+      
+      <div class="product-grid">
+        <!-- Product 1 -->
+        <div class="product-card">
+          <img src="https://via.placeholder.com/300x200/4CAF50/FFFFFF?text=iPhone+12" class="product-image" alt="iPhone 12">
+          <div class="product-details">
+            <h3 class="product-title">iPhone 12 Pro Max 256GB</h3>
+            <div class="product-price">₹85,000</div>
+            <div class="product-location">
+              <span class="material-icons" style="font-size: 14px;">location_on</span>
+              Mumbai, Maharashtra
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">favorite_border</span>
+              Save
+            </button>
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">chat_bubble_outline</span>
+              Chat
+            </button>
+          </div>
+        </div>
+        
+        <!-- Product 2 -->
+        <div class="product-card">
+          <img src="https://via.placeholder.com/300x200/2196F3/FFFFFF?text=Samsung+TV" class="product-image" alt="Samsung TV">
+          <div class="product-details">
+            <h3 class="product-title">Samsung 55" Smart TV</h3>
+            <div class="product-price">₹45,000</div>
+            <div class="product-location">
+              <span class="material-icons" style="font-size: 14px;">location_on</span>
+              Delhi, NCR
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">favorite_border</span>
+              Save
+            </button>
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">chat_bubble_outline</span>
+              Chat
+            </button>
+          </div>
+        </div>
+        
+        <!-- Product 3 -->
+        <div class="product-card">
+          <img src="https://via.placeholder.com/300x200/FF9800/FFFFFF?text=MacBook+Pro" class="product-image" alt="MacBook Pro">
+          <div class="product-details">
+            <h3 class="product-title">MacBook Pro 2021 M1</h3>
+            <div class="product-price">₹1,25,000</div>
+            <div class="product-location">
+              <span class="material-icons" style="font-size: 14px;">location_on</span>
+              Bangalore, Karnataka
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">favorite_border</span>
+              Save
+            </button>
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">chat_bubble_outline</span>
+              Chat
+            </button>
+          </div>
+        </div>
+        
+        <!-- Product 4 -->
+        <div class="product-card">
+          <img src="https://via.placeholder.com/300x200/E91E63/FFFFFF?text=Canon+DSLR" class="product-image" alt="Canon DSLR">
+          <div class="product-details">
+            <h3 class="product-title">Canon EOS 1500D DSLR</h3>
+            <div class="product-price">₹35,000</div>
+            <div class="product-location">
+              <span class="material-icons" style="font-size: 14px;">location_on</span>
+              Chennai, Tamil Nadu
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">favorite_border</span>
+              Save
+            </button>
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">chat_bubble_outline</span>
+              Chat
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <h2 class="section-title">Recently Added</h2>
+      
+      <div class="product-grid">
+        <!-- Product 5 -->
+        <div class="product-card">
+          <img src="https://via.placeholder.com/300x200/9C27B0/FFFFFF?text=PlayStation+5" class="product-image" alt="PlayStation 5">
+          <div class="product-details">
+            <h3 class="product-title">PlayStation 5 Digital Edition</h3>
+            <div class="product-price">₹55,000</div>
+            <div class="product-location">
+              <span class="material-icons" style="font-size: 14px;">location_on</span>
+              Hyderabad, Telangana
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">favorite_border</span>
+              Save
+            </button>
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">chat_bubble_outline</span>
+              Chat
+            </button>
+          </div>
+        </div>
+        
+        <!-- Product 6 -->
+        <div class="product-card">
+          <img src="https://via.placeholder.com/300x200/607D8B/FFFFFF?text=Apple+Watch" class="product-image" alt="Apple Watch">
+          <div class="product-details">
+            <h3 class="product-title">Apple Watch Series 7</h3>
+            <div class="product-price">₹40,000</div>
+            <div class="product-location">
+              <span class="material-icons" style="font-size: 14px;">location_on</span>
+              Pune, Maharashtra
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">favorite_border</span>
+              Save
+            </button>
+            <button class="action-btn">
+              <span class="material-icons" style="font-size: 16px;">chat_bubble_outline</span>
+              Chat
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        // DOM Elements
-        const mainContent = document.getElementById('main-content');
-        const menuButton = document.getElementById('menu-button');
-        const drawer = document.getElementById('drawer');
-        const drawerOverlay = document.getElementById('drawer-overlay');
-        const logoutButton = document.getElementById('logout-button');
-        const navItems = document.querySelectorAll('.nav-item');
-        const userName = document.getElementById('user-name');
-        const userAvatar = document.getElementById('user-avatar');
+    <!-- Add Button -->
+    <div class="add-button">
+      <span class="material-icons">add</span>
+    </div>
 
-        // App state
-        let appState = {
-            currentPage: 'home',
-            locationEnabled: false,
-            loading: true,
-            userPosition: null,
-            maxRadius: 30 // 30km radius
-        };
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <a class="nav-item active">
+        <span class="material-icons nav-icon">home</span>
+        <span>Home</span>
+      </a>
+      <a class="nav-item">
+        <span class="material-icons nav-icon">favorite</span>
+        <span>Saved</span>
+      </a>
+      <a class="nav-item">
+        <span class="material-icons nav-icon">chat</span>
+        <span>Messages</span>
+      </a>
+      <a class="nav-item">
+        <span class="material-icons nav-icon">person</span>
+        <span>Profile</span>
+      </a>
+    </div>
+  </div>
 
-        // Initialize the app
-        function initApp() {
-            // Set up authentication state listener
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    // User is signed in
-                    updateUserProfile(user);
-                    
-                    // Get user data from Firestore
-                    db.collection('users').doc(user.uid).get()
-                        .then(doc => {
-                            if (doc.exists) {
-                                const userData = doc.data();
-                                userName.textContent = userData.displayName || user.email;
-                                if (userData.profileImage) {
-                                    userAvatar.style.backgroundImage = `url(${userData.profileImage})`;
-                                    userAvatar.style.backgroundSize = 'cover';
-                                }
-                            } else {
-                                userName.textContent = user.email;
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error getting user document:", error);
-                            userName.textContent = user.email;
-                        });
-                } else {
-                    // No user is signed in
-                    userName.textContent = "Guest";
-                    userAvatar.style.backgroundImage = '';
-                    userAvatar.style.backgroundColor = 'white';
-                    
-                    // In a real app, you would redirect to login page
-                    // For this demo, we'll just show a message
-                    console.log("No user signed in");
-                }
-            });
+  <!-- Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">Menu</div>
+    <div class="drawer-item" id="login-button">
+      <span class="material-icons drawer-icon">login</span>
+      <span>Login</span>
+    </div>
+    <div class="drawer-item">
+      <span class="material-icons drawer-icon">category</span>
+      <span>All Categories</span>
+    </div>
+    <div class="drawer-item">
+      <span class="material-icons drawer-icon">sell</span>
+      <span>My Products</span>
+    </div>
+    <div class="drawer-item">
+      <span class="material-icons drawer-icon">settings</span>
+      <span>Settings</span>
+    </div>
+    <div class="drawer-item">
+      <span class="material-icons drawer-icon">help</span>
+      <span>Help & Support</span>
+    </div>
+  </div>
+  <div class="drawer-overlay" id="drawer-overlay"></div>
 
-            // Check location permissions
-            checkLocationPermissions();
+  <script>
+    const menuButton = document.getElementById('menu-button');
+    const drawer = document.getElementById('drawer');
+    const drawerOverlay = document.getElementById('drawer-overlay');
+    const loginButton = document.getElementById('login-button');
 
-            // Set up event listeners
-            setupEventListeners();
+    menuButton.addEventListener('click', () => {
+      drawer.classList.toggle('open');
+      drawerOverlay.classList.toggle('open');
+    });
+
+    drawerOverlay.addEventListener('click', () => {
+      drawer.classList.remove('open');
+      drawerOverlay.classList.remove('open');
+    });
+
+    loginButton.addEventListener('click', () => {
+      alert("Redirecting to Login Page...");
+      window.location.href = "loginpage.html";
+    });
+    
+    // Add to favorites functionality
+    const favoriteButtons = document.querySelectorAll('.action-btn:first-child');
+    favoriteButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const icon = this.querySelector('.material-icons');
+        if (icon.textContent === 'favorite_border') {
+          icon.textContent = 'favorite';
+          icon.style.color = '#f44336';
+        } else {
+          icon.textContent = 'favorite_border';
+          icon.style.color = '';
         }
-
-        // Update user profile in the UI
-        function updateUserProfile(user) {
-            if (user.photoURL) {
-                userAvatar.style.backgroundImage = `url(${user.photoURL})`;
-                userAvatar.style.backgroundSize = 'cover';
-            } else {
-                userAvatar.style.backgroundImage = '';
-                userAvatar.style.backgroundColor = 'white';
-            }
-            userName.textContent = user.displayName || user.email;
-        }
-
-        // Check location permissions
-        function checkLocationPermissions() {
-            if (!navigator.geolocation) {
-                console.error("Geolocation is not supported by this browser.");
-                appState.locationEnabled = false;
-                renderContent();
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(
-                position => {
-                    appState.userPosition = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    };
-                    appState.locationEnabled = true;
-                    appState.loading = false;
-                    renderContent();
-                },
-                error => {
-                    console.error("Error getting location:", error);
-                    appState.locationEnabled = false;
-                    appState.loading = false;
-                    renderContent();
-                },
-                { enableHighAccuracy: true }
-            );
-        }
-
-        // Calculate distance between two coordinates in km
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radius of the earth in km
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c; // Distance in km
-        }
-
-        function deg2rad(deg) {
-            return deg * (Math.PI/180);
-        }
-
-        // Set up event listeners
-        function setupEventListeners() {
-            // Menu button
-            menuButton.addEventListener('click', toggleDrawer);
-            
-            // Drawer overlay
-            drawerOverlay.addEventListener('click', toggleDrawer);
-            
-            // Logout button
-            logoutButton.addEventListener('click', handleLogout);
-            
-            // Navigation items
-            navItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    handleNavigation(item.dataset.page);
-                });
-            });
-        }
-
-        // Toggle drawer
-        function toggleDrawer() {
-            drawer.classList.toggle('open');
-            drawerOverlay.classList.toggle('open');
-        }
-
-        // Handle logout
-        function handleLogout() {
-            auth.signOut().then(() => {
-                toggleDrawer();
-                console.log("User signed out");
-            }).catch(error => {
-                console.error("Error signing out:", error);
-            });
-        }
-
-        // Handle navigation
-        function handleNavigation(page) {
-            appState.currentPage = page;
-            
-            // Update active nav item
-            navItems.forEach(item => {
-                if (item.dataset.page === page) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-            
-            renderContent();
-        }
-
-        // Render content based on current state
-        function renderContent() {
-            if (appState.loading) {
-                renderLoading();
-                return;
-            }
-            
-            if (!appState.locationEnabled) {
-                renderLocationPermission();
-                return;
-            }
-            
-            switch (appState.currentPage) {
-                case 'home':
-                    renderHome();
-                    break;
-                case 'categories':
-                    renderCategories();
-                    break;
-                case 'jobs':
-                    renderMyJobs();
-                    break;
-                case 'history':
-                    renderHistory();
-                    break;
-                case 'profile':
-                    renderProfile();
-                    break;
-                default:
-                    renderHome();
-            }
-        }
-
-        // Render loading state
-        function renderLoading() {
-            mainContent.innerHTML = `
-                <div class="loading-container">
-                    <div class="loading-spinner"></div>
-                </div>
-            `;
-        }
-
-        // Render location permission prompt
-        function renderLocationPermission() {
-            mainContent.innerHTML = `
-                <div class="location-permission">
-                    <h3>Location services required</h3>
-                    <p>Please enable location services to find workers near you</p>
-                    <button class="enable-location-btn" id="enable-location-btn">Enable Location</button>
-                </div>
-            `;
-            
-            // Add event listener to the button
-            document.getElementById('enable-location-btn').addEventListener('click', () => {
-                checkLocationPermissions();
-            });
-        }
-
-        // Render home page with workers from Firestore
-        function renderHome() {
-            if (!appState.userPosition) {
-                mainContent.innerHTML = `
-                    <div class="empty-container">
-                        <div class="empty-text">Unable to determine your location</div>
-                    </div>
-                `;
-                return;
-            }
-
-            mainContent.innerHTML = `
-                <div class="loading-container">
-                    <div class="loading-spinner"></div>
-                    <div class="empty-text">Loading workers...</div>
-                </div>
-            `;
-
-            // Get workers from Firestore
-            db.collection('workers').get()
-                .then(querySnapshot => {
-                    const workers = [];
-                    
-                    querySnapshot.forEach(doc => {
-                        const workerData = doc.data();
-                        const workerLocation = workerData.location;
-                        
-                        if (workerLocation) {
-                            const distance = calculateDistance(
-                                appState.userPosition.latitude,
-                                appState.userPosition.longitude,
-                                workerLocation.latitude,
-                                workerLocation.longitude
-                            );
-                            
-                            if (distance <= appState.maxRadius) {
-                                workers.push({
-                                    id: doc.id,
-                                    name: workerData.name || 'No Name',
-                                    profession: workerData.profession || 'No Profession',
-                                    experience: workerData.experience?.toString() || '0',
-                                    profileImage: workerData.profileImage,
-                                    distance: distance.toFixed(1),
-                                    rating: workerData.rating?.toString() || '4.5',
-                                    jobsCompleted: workerData.jobsCompleted?.toString() || '0'
-                                });
-                            }
-                        }
-                    });
-                    
-                    if (workers.length === 0) {
-                        mainContent.innerHTML = `
-                            <div class="empty-container">
-                                <div class="empty-text">No workers found within ${appState.maxRadius}km</div>
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    renderWorkerCards(workers);
-                })
-                .catch(error => {
-                    console.error("Error getting workers:", error);
-                    mainContent.innerHTML = `
-                        <div class="empty-container">
-                            <div class="empty-text">Error loading workers</div>
-                        </div>
-                    `;
-                });
-        }
-
-        // Render worker cards
-        function renderWorkerCards(workers) {
-            let html = '';
-            workers.forEach(worker => {
-                html += `
-                    <div class="worker-card">
-                        <div class="card-content">
-                            <img src="${worker.profileImage || 'https://via.placeholder.com/100x120?text=No+Image'}" 
-                                 alt="${worker.name}" 
-                                 class="worker-image">
-                            <div class="worker-info">
-                                <div class="worker-name">${worker.name}</div>
-                                <div class="worker-profession">${worker.profession} | ${worker.experience} years experience</div>
-                                <div class="chips-container">
-                                    <div class="chip">
-                                        <span class="material-icons chip-icon">star</span>
-                                        ${worker.rating}
-                                    </div>
-                                    <div class="chip">
-                                        <span class="material-icons chip-icon">location_on</span>
-                                        ${worker.distance} km
-                                    </div>
-                                    <div class="chip">
-                                        <span class="material-icons chip-icon">work</span>
-                                        ${worker.jobsCompleted} jobs
-                                    </div>
-                                </div>
-                                <div class="buttons-container">
-                                    <button class="button details-button" data-worker-id="${worker.id}">
-                                        <span class="material-icons button-icon">drive_file_move_outlined</span>
-                                        Details
-                                    </button>
-                                    <button class="button book-button" data-worker-id="${worker.id}">
-                                        <span class="material-icons button-icon">book_online</span>
-                                        Book
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            mainContent.innerHTML = html;
-            
-            // Add event listeners to worker buttons
-            document.querySelectorAll('.details-button, .book-button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const workerId = e.currentTarget.dataset.workerId;
-                    alert(`Navigating to worker details for worker ID: ${workerId}`);
-                    // In a real app, this would navigate to the worker details page
-                });
-            });
-        }
-
-        // Render categories page
-        function renderCategories() {
-            mainContent.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <h2>Categories Page</h2>
-                    <p>This would show different worker categories in a real app.</p>
-                </div>
-            `;
-        }
-
-        // Render my jobs page
-        function renderMyJobs() {
-            mainContent.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <h2>My Jobs Page</h2>
-                    <p>This would show your current and past jobs in a real app.</p>
-                </div>
-            `;
-        }
-
-        // Render history page
-        function renderHistory() {
-            mainContent.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <h2>History Page</h2>
-                    <p>This would show your job history in a real app.</p>
-                </div>
-            `;
-        }
-
-        // Render profile page
-        function renderProfile() {
-            const user = auth.currentUser;
-            
-            if (!user) {
-                mainContent.innerHTML = `
-                    <div style="text-align: center; padding: 20px;">
-                        <h2>Profile Page</h2>
-                        <p>Please sign in to view your profile.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            mainContent.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <h2>Profile Page</h2>
-                    <div style="margin: 20px auto; width: 100px; height: 100px; border-radius: 50%; 
-                        background-image: url('${user.photoURL || 'https://via.placeholder.com/100?text=No+Image'}');
-                        background-size: cover; background-position: center;"></div>
-                    <h3 style="margin: 10px 0;">${user.displayName || 'No Name'}</h3>
-                    <p>${user.email}</p>
-                    <div style="margin-top: 20px;">
-                        <p>This would show more profile information in a real app.</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Initialize the app when the page loads
-        window.addEventListener('DOMContentLoaded', initApp);
-    </script>
+      });
+    });
+  </script>
 </body>
 </html>
