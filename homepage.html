@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickPick - Marketplace</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    body {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    /* App Bar */
+    .app-bar {
+      background-color: #1976D2;
+      color: white;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .app-title {
+      font-weight: 700;
+      font-size: 20px;
+    }
+    .app-bar-icon {
+      color: white;
+      cursor: pointer;
+    }
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      background-color: white;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+      z-index: 100;
+      height: 60px;
+    }
+    .nav-item {
+      flex: 1;
+      padding: 8px 0 0 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      text-decoration: none;
+      font-size: 12px;
+      cursor: pointer;
+      height: 100%;
+      transition: color 0.2s;
+    }
+    .nav-item.active {
+      color: #1976D2;
+    }
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 2px;
+    }
+    /* To prevent content from being hidden behind bottom nav */
+    .content-spacer {
+      height: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- App Bar -->
+    <div class="app-bar">
+      <span class="material-icons app-bar-icon" id="menu-button">menu</span>
+      <span class="app-title">Quick Pick</span>
+      <span class="material-icons app-bar-icon" id="search-button">search</span>
+    </div>
+    <div class="content-spacer"></div>
+    <!-- Bottom Navigation (always visible at bottom) -->
+    <div class="bottom-nav">
+      <a class="nav-item active" id="home-nav">
+        <span class="material-icons nav-icon">home</span>
+        <span>Home</span>
+      </a>
+      <a class="nav-item" id="category-nav">
+        <span class="material-icons nav-icon">category</span>
+        <span>Category</span>
+      </a>
+      <a class="nav-item" id="saved-nav">
+        <span class="material-icons nav-icon">shopping_cart</span>
+        <span>Cart</span>
+      </a>
+      <a class="nav-item" id="profile-nav">
+        <span class="material-icons nav-icon">person</span>
+        <span>Profile</span>
+      </a>
+    </div>
+  </div>
+  <script>
+    document.getElementById('category-nav').addEventListener('click', () => {
+      window.location.href = "categorypage.html";
+    });
+    document.getElementById('home-nav').addEventListener('click', () => {
+      window.location.href = "homepage.html";
+    });
+    document.getElementById('saved-nav').addEventListener('click', () => {
+      window.location.href = "savedpage.html";
+    });
+    document.getElementById('profile-nav').addEventListener('click', () => {
+      window.location.href = "profilepage.html";
+    });
+  </script>
+</body>
+</html>
