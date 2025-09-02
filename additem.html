@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickDeals - Sell Item</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* App Bar */
+        .app-bar {
+            background-color: #1976D2;
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .app-title {
+            font-weight: 700;
+            font-size: 20px;
+        }
+        
+        .app-bar-icon {
+            color: white;
+            cursor: pointer;
+        }
+        
+        /* Form Content */
+        .form-content {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .form-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #1976D2;
+            text-align: center;
+        }
+        
+        /* Form Container */
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1976D2;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title .material-icons {
+            margin-right: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            border-color: #1976D2;
+            outline: none;
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-hint {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Image Upload */
+        .image-upload {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .upload-box {
+            width: 120px;
+            height: 120px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .upload-box:hover {
+            border-color: #1976D2;
+        }
+        
+        .upload-icon {
+            font-size: 30px;
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        
+        .upload-text {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .uploaded-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        /* Price Input */
+        .price-input {
+            display: flex;
+            align-items: center;
+        }
+        
+        .currency-symbol {
+            background: #f0f0f0;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            font-weight: 500;
+        }
+        
+        .price-field {
+            border-radius: 0 8px 8px 0;
+        }
+        
+        /* Checkbox Group */
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-item input {
+            margin-right: 8px;
+        }
+        
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-submit {
+            background: #1976D2;
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            background: #1565C0;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: flex;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            flex: 1;
+            padding: 12px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            text-decoration: none;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .nav-item.active {
+            color: #1976D2;
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .form-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .image-upload {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- App Bar -->
+        <div class="app-bar">
+            <span class="material-icons app-bar-icon" id="back-button">arrow_back</span>
+            <span class="app-title">Sell an Item</span>
+            <span class="material-icons app-bar-icon">help_outline</span>
+        </div>
+
+        <!-- Form Content -->
+        <div class="form-content">
+            <h2 class="form-title">List Your Item for Sale</h2>
+            
+            <form class="form-container" id="item-form">
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title"><span class="material-icons">info</span>Basic Information</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="title">Item Title*</label>
+                        <input type="text" id="title" class="form-input" placeholder="e.g., iPhone 12 Pro Max 256GB" required>
+                        <p class="form-hint">Be specific and include key details like brand, model, size, color</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="category">Category*</label>
+                        <select id="category" class="form-select" required>
+                            <option value="">Select a category</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="fashion">Fashion</option>
+                            <option value="home">Home & Furniture</option>
+                            <option value="sports">Sports & Fitness</option>
+                            <option value="books">Books & Media</option>
+                            <option value="vehicles">Vehicles</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="condition">Condition*</label>
+                        <select id="condition" class="form-select" required>
+                            <option value="">Select condition</option>
+                            <option value="new">New</option>
+                            <option value="like_new">Like New</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="description">Description*</label>
+                        <textarea id="description" class="form-textarea" placeholder="Describe your item in detail..." required></textarea>
+                        <p class="form-hint">Include details about features, specifications, and any flaws</p>
+                    </div>
+                </div>
+                
+                <!-- Pricing Section -->
+                <div class="form-section">
+                    <h3 class="section-title"><span class="material-icons">attach_money</span>Pricing</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="price">Price*</label>
+                        <div class="price-input">
+                            <span class="currency-symbol">₹</span>
+                            <input type="number" id="price" class="form-input price-field" placeholder="0.00" min="0" step="0.01" required>
+                        </div>
+                        <p class="form-hint">Consider similar items when pricing your product</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Negotiable</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="negotiable">
+                                <label for="negotiable">Price is negotiable</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Images Section -->
+                <div class="form-section">
+                    <h3 class="section-title"><span class="material-icons">photo_camera</span>Images</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Upload Photos*</label>
+                        <p class="form-hint">Add at least 3 photos showing different angles of your item</p>
+                        
+                        <div class="image-upload">
+                            <div class="upload-box" id="upload-trigger">
+                                <span class="material-icons upload-icon">add</span>
+                                <span class="upload-text">Add Photo</span>
+                            </div>
+                            <!-- Uploaded images will appear here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Location & Shipping -->
+                <div class="form-section">
+                    <h3 class="section-title"><span class="material-icons">location_on</span>Location & Shipping</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="location">Your Location*</label>
+                        <input type="text" id="location" class="form-input" placeholder="City, State" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Shipping Options</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="shipping_local" checked>
+                                <label for="shipping_local">Local Pickup</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="shipping_delivery">
+                                <label for="shipping_delivery">I can deliver</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="shipping_national">
+                                <label for="shipping_national">National Shipping</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h3 class="section-title"><span class="material-icons">contact_phone</span>Contact Information</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="contact-name">Your Name*</label>
+                        <input type="text" id="contact-name" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="contact-email">Email Address*</label>
+                        <input type="email" id="contact-email" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="contact-phone">Phone Number*</label>
+                        <input type="tel" id="contact-phone" class="form-input" required>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-submit">Publish Item</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <a class="nav-item" id="home-nav" href="homepage.html">
+                <span class="material-icons nav-icon">home</span>
+                <span>Home</span>
+            </a>
+            <a class="nav-item" id="category-nav" href="categorypage.html">
+                <span class="material-icons nav-icon">category</span>
+                <span>Category</span>
+            </a>
+            <a class="nav-item active" id="sell-nav" href="additem.html">
+                <span class="material-icons nav-icon">add_box</span>
+                <span>Sell</span>
+            </a>
+            <a class="nav-item" id="cart-nav" href="savedpage.html">
+                <span class="material-icons nav-icon">shopping_cart</span>
+                <span>Cart</span>
+            </a>
+            <a class="nav-item" id="profile-nav" href="profilepage.html">
+                <span class="material-icons nav-icon">person</span>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Back button functionality
+        document.getElementById('back-button').addEventListener('click', function() {
+            window.history.back();
+        });
+
+        // Bottom navigation functionality
+        document.getElementById('home-nav').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "homepage.html";
+        });
+        document.getElementById('category-nav').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "categorypage.html";
+        });
+        document.getElementById('sell-nav').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "additem.html";
+        });
+        document.getElementById('cart-nav').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "savedpage.html";
+        });
+        document.getElementById('profile-nav').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "profilepage.html";
+        });
+
+        // Form submission
+        document.getElementById('item-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Your item has been submitted for review! It will be published soon.');
+            // In a real app, you would process the form data here
+        });
+        
+        // Image upload simulation
+        const uploadTrigger = document.getElementById('upload-trigger');
+        const imageUpload = document.querySelector('.image-upload');
+        let imageCount = 0;
+        
+        uploadTrigger.addEventListener('click', function() {
+            if (imageCount >= 5) {
+                alert('Maximum 5 images allowed');
+                return;
+            }
+            
+            imageCount++;
+            
+            // Create a new image box
+            const newImage = document.createElement('div');
+            newImage.className = 'uploaded-image';
+            newImage.style.backgroundImage = `url(https://via.placeholder.com/120/1976D2/FFFFFF?text=Image+${imageCount})`;
+            newImage.style.backgroundSize = 'cover';
+            
+            // Add remove button
+            const removeBtn = document.createElement('span');
+            removeBtn.className = 'material-icons';
+            removeBtn.innerHTML = 'close';
+            removeBtn.style.position = 'absolute';
+            removeBtn.style.top = '5px';
+            removeBtn.style.right = '5px';
+            removeBtn.style.background = 'rgba(0,0,0,0.5)';
+            removeBtn.style.color = 'white';
+            removeBtn.style.borderRadius = '50%';
+            removeBtn.style.fontSize = '16px';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.style.padding = '2px';
+            
+            // Container for the image with remove button
+            const imageContainer = document.createElement('div');
+            imageContainer.style.position = 'relative';
+            imageContainer.style.display = 'inline-block';
+            imageContainer.appendChild(newImage);
+            imageContainer.appendChild(removeBtn);
+            
+            // Insert before the upload trigger
+            imageUpload.insertBefore(imageContainer, uploadTrigger);
+            
+            // Remove image functionality
+            removeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                imageUpload.removeChild(imageContainer);
+                imageCount--;
+            });
+        });
+        
+        // Cancel button functionality
+        document.querySelector('.btn-cancel').addEventListener('click', function() {
+            if (confirm('Are you sure you want to cancel? All entered data will be lost.')) {
+                window.history.back();
+            }
+        });
+    </script>
+</body>
+</html>

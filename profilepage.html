@@ -275,12 +275,13 @@
             <div class="action-desc">Manage your listings</div>
           </div>
           
-          <div class="action-card" id="my-ideas">
+          <!-- Suggestion: Replace "My Ideas" with "Account Settings" -->
+          <div class="action-card" id="account-settings">
             <div class="action-icon">
-              <span class="material-icons">lightbulb</span>
+              <span class="material-icons">settings</span>
             </div>
-            <div class="action-title">My Ideas</div>
-            <div class="action-desc">Share your product ideas</div>
+            <div class="action-title">Account Settings</div>
+            <div class="action-desc">Manage your profile & preferences</div>
           </div>
         </div>
       </div>
@@ -333,19 +334,19 @@
 
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-      <a class="nav-item" id="home-nav">
+      <a class="nav-item" id="home-nav" href="homepage.html">
         <span class="material-icons nav-icon">home</span>
         <span>Home</span>
       </a>
-      <a class="nav-item" id="category-nav">
+      <a class="nav-item" id="category-nav" href="categorypage.html">
         <span class="material-icons nav-icon">category</span>
         <span>Category</span>
       </a>
-      <a class="nav-item" id="saved-nav">
+      <a class="nav-item" id="saved-nav" href="savedpage.html">
         <span class="material-icons nav-icon">shopping_cart</span>
         <span>Cart</span>
       </a>
-      <a class="nav-item active" id="profile-nav">
+      <a class="nav-item active" id="profile-nav" href="profilepage.html">
         <span class="material-icons nav-icon">person</span>
         <span>Profile</span>
       </a>
@@ -366,8 +367,7 @@
 
     // Quick action functionality
     document.getElementById('add-product').addEventListener('click', function() {
-      alert("Redirecting to add product page...");
-      // In a real app: window.location.href = "add-product.html";
+      window.location.href = "additem.html";
     });
 
     document.getElementById('my-bookings').addEventListener('click', function() {
@@ -383,6 +383,11 @@
     document.getElementById('my-ideas').addEventListener('click', function() {
       alert("Redirecting to my ideas page...");
       // In a real app: window.location.href = "my-ideas.html";
+    });
+
+    document.getElementById('account-settings').addEventListener('click', function() {
+      alert("Redirecting to account settings...");
+      // In a real app: window.location.href = "account-settings.html";
     });
 
     document.getElementById('category-nav').addEventListener('click', () => {
