@@ -239,7 +239,7 @@
 
         // Frontend validation
         if (name.length < 3) errors.name = 'Name must be at least 3 characters long.';
-        let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailPattern.test(email)) errors.email = 'Enter a valid Email ID.';
         if (isNaN(age) || age < 10 || age > 120) errors.age = 'Enter a valid Age (10 - 120).';
         if (address.length < 5) errors.address = 'Enter a valid Address.';
@@ -304,3 +304,4 @@
 </script>
 </body>
 </html>
+
