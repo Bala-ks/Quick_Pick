@@ -34,6 +34,9 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .app-title {
@@ -44,6 +47,13 @@
         .app-bar-icon {
             color: white;
             cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+        
+        .app-bar-icon:hover {
+            background-color: rgba(255, 255, 255, 0.2);
         }
         
         /* Form Content */
@@ -74,6 +84,12 @@
         
         .form-section {
             margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-section:last-of-type {
+            border-bottom: none;
         }
         
         .section-title {
@@ -91,6 +107,7 @@
         
         .form-group {
             margin-bottom: 20px;
+            position: relative;
         }
         
         .form-label {
@@ -106,12 +123,13 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
         }
         
         .form-input:focus, .form-textarea:focus, .form-select:focus {
             border-color: #1976D2;
             outline: none;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
         }
         
         .form-textarea {
@@ -123,6 +141,13 @@
             font-size: 14px;
             color: #666;
             margin-top: 5px;
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
         }
         
         /* Image Upload */
@@ -143,11 +168,14 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
         
         .upload-box:hover {
             border-color: #1976D2;
+            background-color: rgba(25, 118, 210, 0.05);
         }
         
         .upload-icon {
@@ -162,11 +190,38 @@
             text-align: center;
         }
         
-        .uploaded-image {
+        .uploaded-image-container {
+            position: relative;
             width: 120px;
             height: 120px;
+        }
+        
+        .uploaded-image {
+            width: 100%;
+            height: 100%;
             border-radius: 8px;
             object-fit: cover;
+        }
+        
+        .remove-image {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .remove-image:hover {
+            background: rgba(0, 0, 0, 0.8);
         }
         
         /* Price Input */
@@ -198,6 +253,14 @@
         .checkbox-item {
             display: flex;
             align-items: center;
+            padding: 8px 12px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        
+        .checkbox-item:hover {
+            background: #f0f0f0;
         }
         
         .checkbox-item input {
@@ -209,6 +272,11 @@
             display: flex;
             justify-content: space-between;
             margin-top: 30px;
+            position: sticky;
+            bottom: 70px;
+            background: white;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
         }
         
         .btn {
@@ -219,6 +287,13 @@
             cursor: pointer;
             transition: all 0.3s;
             border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn .material-icons {
+            margin-right: 8px;
         }
         
         .btn-cancel {
@@ -239,11 +314,107 @@
             background: #1565C0;
         }
         
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        /* Progress indicator */
+        .progress-bar {
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #1976D2;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .loading-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .loading-overlay p {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #1976D2;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1976D2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Success message */
+        .success-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .success-message.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .success-icon {
+            font-size: 60px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        
         /* Bottom Navigation */
         .bottom-nav {
             display: flex;
             background-color: white;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 90;
         }
         
         .nav-item {
@@ -257,6 +428,11 @@
             text-decoration: none;
             font-size: 12px;
             cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .nav-item:hover {
+            color: #1976D2;
         }
         
         .nav-item.active {
@@ -273,6 +449,7 @@
             .form-actions {
                 flex-direction: column;
                 gap: 15px;
+                position: static;
             }
             
             .btn {
@@ -282,24 +459,34 @@
             .image-upload {
                 justify-content: center;
             }
+            
+            .checkbox-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .form-section {
+                padding-bottom: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- App Bar -->
         <div class="app-bar">
             <span class="material-icons app-bar-icon" id="back-button">arrow_back</span>
             <span class="app-title">Sell an Item</span>
-            <span class="material-icons app-bar-icon">help_outline</span>
+            <span class="material-icons app-bar-icon" id="help-button">help_outline</span>
         </div>
 
-        <!-- Form Content -->
+        <div class="progress-bar">
+            <div class="progress-fill" id="form-progress"></div>
+        </div>
+
         <div class="form-content">
             <h2 class="form-title">List Your Item for Sale</h2>
             
             <form class="form-container" id="item-form">
-                <!-- Basic Information Section -->
                 <div class="form-section">
                     <h3 class="section-title"><span class="material-icons">info</span>Basic Information</h3>
                     
@@ -307,6 +494,7 @@
                         <label class="form-label" for="title">Item Title*</label>
                         <input type="text" id="title" class="form-input" placeholder="e.g., iPhone 12 Pro Max 256GB" required>
                         <p class="form-hint">Be specific and include key details like brand, model, size, color</p>
+                        <p class="error-message" id="title-error">Please enter a valid item title</p>
                     </div>
                     
                     <div class="form-group">
@@ -321,6 +509,7 @@
                             <option value="vehicles">Vehicles</option>
                             <option value="other">Other</option>
                         </select>
+                        <p class="error-message" id="category-error">Please select a category</p>
                     </div>
                     
                     <div class="form-group">
@@ -332,16 +521,17 @@
                             <option value="good">Good</option>
                             <option value="fair">Fair</option>
                         </select>
+                        <p class="error-message" id="condition-error">Please select the item condition</p>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label" for="description">Description*</label>
                         <textarea id="description" class="form-textarea" placeholder="Describe your item in detail..." required></textarea>
                         <p class="form-hint">Include details about features, specifications, and any flaws</p>
+                        <p class="error-message" id="description-error">Please provide a detailed description</p>
                     </div>
                 </div>
                 
-                <!-- Pricing Section -->
                 <div class="form-section">
                     <h3 class="section-title"><span class="material-icons">attach_money</span>Pricing</h3>
                     
@@ -352,6 +542,7 @@
                             <input type="number" id="price" class="form-input price-field" placeholder="0.00" min="0" step="0.01" required>
                         </div>
                         <p class="form-hint">Consider similar items when pricing your product</p>
+                        <p class="error-message" id="price-error">Please enter a valid price</p>
                     </div>
                     
                     <div class="form-group">
@@ -365,31 +556,33 @@
                     </div>
                 </div>
                 
-                <!-- Images Section -->
                 <div class="form-section">
                     <h3 class="section-title"><span class="material-icons">photo_camera</span>Images</h3>
                     
                     <div class="form-group">
-                        <label class="form-label">Upload Photos*</label>
-                        <p class="form-hint">Add at least 3 photos showing different angles of your item</p>
+                        <label class="form-label">Upload Photos</label>
+                        <p class="form-hint">Add up to 5 photos of your item.</p>
                         
-                        <div class="image-upload">
+                        <div class="image-upload" id="image-upload-container">
                             <div class="upload-box" id="upload-trigger">
                                 <span class="material-icons upload-icon">add</span>
                                 <span class="upload-text">Add Photo</span>
+                                <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
                             </div>
-                            <!-- Uploaded images will appear here -->
                         </div>
                     </div>
                 </div>
                 
-                <!-- Location & Shipping -->
                 <div class="form-section">
                     <h3 class="section-title"><span class="material-icons">location_on</span>Location & Shipping</h3>
                     
                     <div class="form-group">
                         <label class="form-label" for="location">Your Location*</label>
-                        <input type="text" id="location" class="form-input" placeholder="City, State" required>
+                        <input type="text" id="location" class="form-input" placeholder="City, State" required disabled>
+                        <p class="form-hint" id="location-hint">Getting your location...</p>
+                        <p class="error-message" id="location-error">Please enter your location</p>
+                        <input type="hidden" id="latitude">
+                        <input type="hidden" id="longitude">
                     </div>
                     
                     <div class="form-group">
@@ -400,8 +593,8 @@
                                 <label for="shipping_local">Local Pickup</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="shipping_delivery">
-                                <label for="shipping_delivery">I can deliver</label>
+                                <input type="checkbox" id="shipping_delivery" checked>
+                                <label for="shipping_delivery">Local Delivery (30-60 km)</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="shipping_national">
@@ -411,35 +604,35 @@
                     </div>
                 </div>
                 
-                <!-- Contact Information -->
                 <div class="form-section">
                     <h3 class="section-title"><span class="material-icons">contact_phone</span>Contact Information</h3>
                     
                     <div class="form-group">
                         <label class="form-label" for="contact-name">Your Name*</label>
                         <input type="text" id="contact-name" class="form-input" required>
+                        <p class="error-message" id="name-error">Please enter your name</p>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label" for="contact-email">Email Address*</label>
                         <input type="email" id="contact-email" class="form-input" required>
+                        <p class="error-message" id="email-error">Please enter a valid email address</p>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label" for="contact-phone">Phone Number*</label>
                         <input type="tel" id="contact-phone" class="form-input" required>
+                        <p class="error-message" id="phone-error">Please enter a valid phone number</p>
                     </div>
                 </div>
                 
-                <!-- Form Actions -->
                 <div class="form-actions">
-                    <button type="button" class="btn btn-cancel">Cancel</button>
-                    <button type="submit" class="btn btn-submit">Publish Item</button>
+                    <button type="button" class="btn btn-cancel"><span class="material-icons">cancel</span>Cancel</button>
+                    <button type="submit" class="btn btn-submit" id="submit-button"><span class="material-icons">check_circle</span>Publish Item</button>
                 </div>
             </form>
         </div>
 
-        <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <a class="nav-item" id="home-nav" href="homepage.html">
                 <span class="material-icons nav-icon">home</span>
@@ -462,92 +655,338 @@
                 <span>Profile</span>
             </a>
         </div>
+        
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+            <p id="loading-text">Uploading images...</p>
+        </div>
+        
+        <div class="success-message" id="success-message">
+            <span class="material-icons success-icon">check_circle</span>
+            <h3>Item Published Successfully!</h3>
+            <p>Your item has been submitted for review and will be visible to buyers soon.</p>
+            <button class="btn btn-submit" id="success-button" style="margin-top: 20px;">Continue</button>
+        </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, GeoPoint } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+        // =========================================================================
+        // Firebase Configuration
+        // =========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0",
+            authDomain: "quickpick-1523f.firebaseapp.com",
+            projectId: "quickpick-1523f",
+            storageBucket: "quickpick-1523f.appspot.com",
+            messagingSenderId: "814647987706",
+            appId: "1:814647987706:web:01595f83582fe3de0e2843",
+            measurementId: "G-MMK0VWMY8T"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        
+        // Initialize services
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const auth = getAuth(app);
+        
+        let currentUser = null;
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+            } else {
+                alert("You must log in first!");
+                window.location.href = "loginpage.html";
+            }
+        });
+        
+        // =========================================================================
+        // Get HTML Elements
+        // =========================================================================
+        const form = document.getElementById('item-form');
+        const submitButton = document.getElementById('submit-button');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
+        const successMessage = document.getElementById('success-message');
+        const progressFill = document.getElementById('form-progress');
+        const locationInput = document.getElementById('location');
+        const latitudeInput = document.getElementById('latitude');
+        const longitudeInput = document.getElementById('longitude');
+        const fileInput = document.getElementById('file-input');
+        const imageUploadContainer = document.getElementById('image-upload-container');
+        const uploadTrigger = document.getElementById('upload-trigger');
+        
+        let uploadedFiles = [];
+        
+        // =========================================================================
+        // Functions
+        // =========================================================================
+
+        // Geolocation setup on page load
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    latitudeInput.value = lat;
+                    longitudeInput.value = lng;
+                    
+                    const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=YOUR_GOOGLE_MAPS_API_KEY`; // REPLACE WITH YOUR API KEY
+                    fetch(geocodingUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.results && data.results.length > 0) {
+                                locationInput.value = data.results[0].formatted_address;
+                            } else {
+                                locationInput.value = `Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                            }
+                            locationInput.disabled = false;
+                            document.getElementById('location-hint').textContent = "Your location has been auto-detected.";
+                        })
+                        .catch(error => {
+                            console.error("Geocoding failed: ", error);
+                            locationInput.placeholder = "Failed to get location. Please enter manually.";
+                            locationInput.disabled = false;
+                        });
+                }, error => {
+                    console.error("Geolocation error: ", error);
+                    locationInput.placeholder = "Geolocation failed. Please enter your city/state.";
+                    locationInput.disabled = false;
+                    document.getElementById('location-hint').textContent = "Failed to get location. Please enter your location manually.";
+                });
+            } else {
+                locationInput.placeholder = "Geolocation not supported. Please enter your city/state.";
+                locationInput.disabled = false;
+                document.getElementById('location-hint').textContent = "Geolocation not supported by your browser. Please enter your location manually.";
+            }
+        }
+        
+        getLocation();
+        
         // Back button functionality
         document.getElementById('back-button').addEventListener('click', function() {
-            window.history.back();
+            if (confirm('Are you sure you want to leave? All unsaved changes will be lost.')) {
+                window.history.back();
+            }
+        });
+
+        // Help button functionality
+        document.getElementById('help-button').addEventListener('click', function() {
+            alert('Need help? Contact our support team at support@quickdeals.com or call +1-800-QUICKDEALS');
         });
 
         // Bottom navigation functionality
-        document.getElementById('home-nav').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = "homepage.html";
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (this.id !== 'sell-nav') {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to leave? All unsaved changes will be lost.')) {
+                        window.location.href = this.getAttribute('href');
+                    }
+                }
+            });
         });
-        document.getElementById('category-nav').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = "categorypage.html";
+        
+        // Track form progress
+        function updateFormProgress() {
+            const requiredFields = form.querySelectorAll('[required]');
+            let filledCount = 0;
+            
+            requiredFields.forEach(field => {
+                if (field.value.trim() !== '') {
+                    filledCount++;
+                }
+            });
+            
+            const progress = (filledCount / requiredFields.length) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
+        
+        // Add input event listeners to all form fields
+        const formFields = form.querySelectorAll('input, textarea, select');
+        formFields.forEach(field => {
+            field.addEventListener('input', updateFormProgress);
+            field.addEventListener('change', updateFormProgress);
         });
-        document.getElementById('sell-nav').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = "additem.html";
+        
+        // Image upload functionality
+        uploadTrigger.addEventListener('click', function() {
+            fileInput.click();
         });
-        document.getElementById('cart-nav').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = "savedpage.html";
-        });
-        document.getElementById('profile-nav').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = "profilepage.html";
+        
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files.length > 0) {
+                const filesToAdd = Array.from(e.target.files).slice(0, 5 - uploadedFiles.length);
+                
+                filesToAdd.forEach(file => {
+                    if (!file.type.match('image.*')) {
+                        alert('Please select image files only');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imageContainer = document.createElement('div');
+                        imageContainer.className = 'uploaded-image-container';
+                        
+                        const img = document.createElement('img');
+                        img.className = 'uploaded-image';
+                        img.src = e.target.result;
+                        
+                        const removeBtn = document.createElement('span');
+                        removeBtn.className = 'remove-image';
+                        removeBtn.innerHTML = '×';
+                        
+                        imageContainer.appendChild(img);
+                        imageContainer.appendChild(removeBtn);
+                        
+                        imageUploadContainer.insertBefore(imageContainer, uploadTrigger);
+                        
+                        uploadedFiles.push({ file: file, element: imageContainer });
+
+                        removeBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const indexToRemove = uploadedFiles.findIndex(item => item.element === imageContainer);
+                            if (indexToRemove > -1) {
+                                uploadedFiles.splice(indexToRemove, 1);
+                            }
+                            imageUploadContainer.removeChild(imageContainer);
+                            updateFormProgress();
+                        });
+                        
+                        updateFormProgress();
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+                
+                fileInput.value = '';
+            }
         });
 
-        // Form submission
-        document.getElementById('item-form').addEventListener('submit', function(e) {
+        // Form submission with Firebase
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
-            alert('Your item has been submitted for review! It will be published soon.');
-            // In a real app, you would process the form data here
-        });
-        
-        // Image upload simulation
-        const uploadTrigger = document.getElementById('upload-trigger');
-        const imageUpload = document.querySelector('.image-upload');
-        let imageCount = 0;
-        
-        uploadTrigger.addEventListener('click', function() {
-            if (imageCount >= 5) {
-                alert('Maximum 5 images allowed');
+            
+            let isValid = true;
+            
+            // Validate required fields
+            const requiredFields = [
+                {id: 'title', error: 'title-error'},
+                {id: 'category', error: 'category-error'},
+                {id: 'condition', error: 'condition-error'},
+                {id: 'description', error: 'description-error'},
+                {id: 'price', error: 'price-error'},
+                {id: 'location', error: 'location-error'},
+                {id: 'contact-name', error: 'name-error'},
+                {id: 'contact-email', error: 'email-error'},
+                {id: 'contact-phone', error: 'phone-error'}
+            ];
+            
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                const error = document.getElementById(field.error);
+                
+                if (!input.value.trim()) {
+                    error.style.display = 'block';
+                    input.style.borderColor = '#d32f2f';
+                    isValid = false;
+                } else {
+                    error.style.display = 'none';
+                    input.style.borderColor = '#ddd';
+                    
+                    if (field.id === 'contact-email') {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(input.value)) {
+                            error.style.display = 'block';
+                            input.style.borderColor = '#d32f2f';
+                            isValid = false;
+                        }
+                    }
+                    
+                    if (field.id === 'price' && parseFloat(input.value) <= 0) {
+                        error.style.display = 'block';
+                        input.style.borderColor = '#d32f2f';
+                        isValid = false;
+                    }
+                }
+            });
+            
+            if (!isValid) {
+                const firstError = form.querySelector('.error-message[style="display: block"]');
+                if (firstError) {
+                    firstError.closest('.form-group').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
                 return;
             }
             
-            imageCount++;
-            
-            // Create a new image box
-            const newImage = document.createElement('div');
-            newImage.className = 'uploaded-image';
-            newImage.style.backgroundImage = `url(https://via.placeholder.com/120/1976D2/FFFFFF?text=Image+${imageCount})`;
-            newImage.style.backgroundSize = 'cover';
-            
-            // Add remove button
-            const removeBtn = document.createElement('span');
-            removeBtn.className = 'material-icons';
-            removeBtn.innerHTML = 'close';
-            removeBtn.style.position = 'absolute';
-            removeBtn.style.top = '5px';
-            removeBtn.style.right = '5px';
-            removeBtn.style.background = 'rgba(0,0,0,0.5)';
-            removeBtn.style.color = 'white';
-            removeBtn.style.borderRadius = '50%';
-            removeBtn.style.fontSize = '16px';
-            removeBtn.style.cursor = 'pointer';
-            removeBtn.style.padding = '2px';
-            
-            // Container for the image with remove button
-            const imageContainer = document.createElement('div');
-            imageContainer.style.position = 'relative';
-            imageContainer.style.display = 'inline-block';
-            imageContainer.appendChild(newImage);
-            imageContainer.appendChild(removeBtn);
-            
-            // Insert before the upload trigger
-            imageUpload.insertBefore(imageContainer, uploadTrigger);
-            
-            // Remove image functionality
-            removeBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                imageUpload.removeChild(imageContainer);
-                imageCount--;
-            });
+            try {
+                loadingOverlay.classList.add('visible');
+                submitButton.disabled = true;
+                
+                // Upload images to Firebase Storage
+                const imageUrls = [];
+                loadingText.textContent = `Uploading ${uploadedFiles.length} images...`;
+                for (const fileObj of uploadedFiles) {
+                    const storageRef = ref(storage, `product_images/${Date.now()}_${fileObj.file.name}`);
+                    const snapshot = await uploadBytes(storageRef, fileObj.file);
+                    const downloadURL = await getDownloadURL(snapshot.ref);
+                    imageUrls.push(downloadURL);
+                }
+
+                if (!currentUser) {
+                    throw new Error("You must be logged in to sell an item.");
+                }
+
+                loadingText.textContent = `Saving product details...`;
+                const productData = {
+                    title: document.getElementById('title').value,
+                    category: document.getElementById('category').value,
+                    condition: document.getElementById('condition').value,
+                    description: document.getElementById('description').value,
+                    price: parseFloat(document.getElementById('price').value),
+                    negotiable: document.getElementById('negotiable').checked,
+                    seller: {
+                        name: document.getElementById('contact-name').value,
+                        email: document.getElementById('contact-email').value,
+                        phone: document.getElementById('contact-phone').value,
+                    },
+                    location: new GeoPoint(
+                        parseFloat(latitudeInput.value),
+                        parseFloat(longitudeInput.value)
+                    ),
+                    images: imageUrls,
+                    shipping_options: {
+                        local_pickup: document.getElementById('shipping_local').checked,
+                        local_delivery: document.getElementById('shipping_delivery').checked,
+                        national_shipping: document.getElementById('shipping_national').checked
+                    },
+                    status: 'available',
+                    userId: currentUser.uid,
+                    createdAt: serverTimestamp()
+                };
+
+                await addDoc(collection(db, 'products'), productData);
+
+                loadingOverlay.classList.remove('visible');
+                successMessage.classList.add('visible');
+
+            } catch (error) {
+                console.error("Error publishing item: ", error);
+                loadingOverlay.classList.remove('visible');
+                submitButton.disabled = false;
+                alert('An error occurred. Please try again. ' + error.message);
+            }
         });
         
         // Cancel button functionality
@@ -556,6 +995,13 @@
                 window.history.back();
             }
         });
+        
+        document.getElementById('success-button').addEventListener('click', function() {
+            successMessage.classList.remove('visible');
+            window.location.href = 'homepage.html';
+        });
+
+        updateFormProgress();
     </script>
 </body>
 </html>
