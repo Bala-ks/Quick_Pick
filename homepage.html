@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickPick - Marketplace</title>
+  <title>QuickPick - Nearby Products</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
@@ -20,7 +20,7 @@
     .app-container {
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      min-height: 100vh;
     }
     /* App Bar */
     .app-bar {
@@ -31,6 +31,9 @@
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .app-title {
       font-weight: 700;
@@ -39,6 +42,128 @@
     .app-bar-icon {
       color: white;
       cursor: pointer;
+    }
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      padding: 16px;
+      padding-bottom: 70px; /* Space for bottom nav */
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: #333;
+    }
+    /* Product Cards */
+    .product-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .product-image {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    .product-details {
+      padding: 12px;
+    }
+    .product-name {
+      font-weight: 500;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    .product-description {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .product-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .product-price {
+      font-weight: 700;
+      color: #1976D2;
+    }
+    .product-distance {
+      display: flex;
+      align-items: center;
+      color: #666;
+      font-size: 14px;
+    }
+    .distance-icon {
+      font-size: 16px;
+      margin-right: 4px;
+      color: #1976D2;
+    }
+    .product-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .action-button {
+      flex: 1;
+      padding: 8px 0;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .details-button {
+      background-color: #E3F2FD;
+      color: #1976D2;
+    }
+    .buy-button {
+      background-color: #1976D2;
+      color: white;
+    }
+    /* Loading and Error States */
+    .loading-container, .error-container, .location-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1976D2;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .location-button {
+      margin-top: 16px;
+      padding: 10px 20px;
+      background-color: #1976D2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     /* Bottom Navigation */
     .bottom-nav {
@@ -73,42 +198,239 @@
       font-size: 24px;
       margin-bottom: 2px;
     }
-    /* To prevent content from being hidden behind bottom nav */
-    .content-spacer {
-      height: 60px;
-    }
   </style>
 </head>
 <body>
   <div class="app-container">
-    <!-- App Bar -->
     <div class="app-bar">
       <span class="material-icons app-bar-icon" id="menu-button">menu</span>
-      <span class="app-title">Quick Pick</span>
+      <span class="app-title">QuickPick</span>
       <span class="material-icons app-bar-icon" id="search-button">search</span>
     </div>
-    <div class="content-spacer"></div>
-    <!-- Bottom Navigation (always visible at bottom) -->
+
+    <div class="content-area" id="content-area">
+      <div class="loading-container" id="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Finding products near you...</p>
+      </div>
+    </div>
+
     <div class="bottom-nav">
-      <a class="nav-item active" id="home-nav">
+      <a class="nav-item active" id="home-nav" href="homepage.html">
         <span class="material-icons nav-icon">home</span>
         <span>Home</span>
       </a>
-      <a class="nav-item" id="category-nav">
+      <a class="nav-item" id="category-nav" href="categorypage.html">
         <span class="material-icons nav-icon">category</span>
         <span>Category</span>
       </a>
-      <a class="nav-item" id="saved-nav">
+      <a class="nav-item" id="sell-nav" href="additem.html">
+        <span class="material-icons nav-icon">add_box</span>
+        <span>Sell</span>
+      </a>
+      <a class="nav-item" id="saved-nav" href="savedpage.html">
         <span class="material-icons nav-icon">shopping_cart</span>
         <span>Cart</span>
       </a>
-      <a class="nav-item" id="profile-nav">
+      <a class="nav-item" id="profile-nav" href="profilepage.html">
         <span class="material-icons nav-icon">person</span>
         <span>Profile</span>
       </a>
     </div>
   </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
   <script>
+    // =========================================================================
+    // Firebase Configuration
+    // =========================================================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0",
+        authDomain: "quickpick-1523f.firebaseapp.com",
+        projectId: "quickpick-1523f",
+        storageBucket: "quickpick-1523f.appspot.com",
+        messagingSenderId: "814647987706",
+        appId: "1:814647987706:web:01595f83582fe3de0e2843",
+        measurementId: "G-MMK0VWMY8T"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // =========================================================================
+    // HTML Elements & Logic
+    // =========================================================================
+    const contentArea = document.getElementById('content-area');
+    const loadingContainer = document.getElementById('loading-container');
+
+    // Haversine formula to calculate distance between two lat/lng points
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of Earth in kilometers
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const d = R * c; // Distance in km
+        return d;
+    }
+
+    // Fetch products from Firebase and filter by distance
+    async function fetchNearbyProducts(userLocation) {
+        try {
+            const productsCollection = await db.collection('products').get();
+            const productsList = [];
+            
+            productsCollection.forEach(doc => {
+                const productData = doc.data();
+                const productLocation = productData.location;
+                
+                // Only include products with valid location data
+                if (productLocation && productLocation.latitude && productLocation.longitude) {
+                    const distance = getDistance(
+                        userLocation.lat,
+                        userLocation.lng,
+                        productLocation.latitude,
+                        productLocation.longitude
+                    );
+
+                    // Filter products within the 30-60 km delivery radius
+                    if (distance >= 30 && distance <= 60) {
+                        productsList.push({
+                            id: doc.id,
+                            ...productData,
+                            distance: distance.toFixed(1) // Round to one decimal place
+                        });
+                    }
+                }
+            });
+
+            // If no products found, show a message
+            if (productsList.length === 0) {
+                showNoProductsFound();
+            } else {
+                displayProducts(productsList);
+            }
+
+        } catch (error) {
+            console.error("Error fetching products: ", error);
+            showError("Failed to fetch products. Please try again later.");
+        }
+    }
+
+    // Display products
+    function displayProducts(products) {
+        loadingContainer.style.display = 'none';
+        
+        const productsSection = document.createElement('div');
+        productsSection.innerHTML = `<h2 class="section-title">Products Near You</h2><div id="products-list"></div>`;
+        contentArea.appendChild(productsSection);
+        
+        const productsList = document.getElementById('products-list');
+        products.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            productCard.innerHTML = `
+                <img src="${product.images[0]}" alt="${product.title}" class="product-image">
+                <div class="product-details">
+                    <h3 class="product-name">${product.title}</h3>
+                    <p class="product-description">${product.description}</p>
+                    <div class="product-meta">
+                        <span class="product-price">₹${product.price}</span>
+                        <span class="product-distance">
+                            <span class="material-icons distance-icon">location_on</span>
+                            ${product.distance} km away
+                        </span>
+                    </div>
+                    <div class="product-actions">
+                        <button class="action-button details-button" data-product-id="${product.id}">
+                            <span class="material-icons">info</span>
+                            Details
+                        </button>
+                        <button class="action-button buy-button" data-product-id="${product.id}">
+                            <span class="material-icons">shopping_cart</span>
+                            Buy Now
+                        </button>
+                    </div>
+                </div>
+            `;
+            productsList.appendChild(productCard);
+        });
+    }
+
+    // Show no products message
+    function showNoProductsFound() {
+        loadingContainer.innerHTML = `
+            <div class="error-container">
+                <span class="material-icons" style="font-size: 48px; color: #666; margin-bottom: 16px;">sentiment_dissatisfied</span>
+                <p>No products found in your delivery radius.</p>
+                <p>Try searching in a different area or check back later!</p>
+            </div>
+        `;
+    }
+
+    // Show generic error message
+    function showError(message) {
+        loadingContainer.innerHTML = `
+            <div class="error-container">
+                <span class="material-icons" style="font-size: 48px; color: #f44336; margin-bottom: 16px;">error_outline</span>
+                <p>${message}</p>
+            </div>
+        `;
+    }
+
+    // Show location error message
+    function showLocationError() {
+      loadingContainer.innerHTML = `
+        <div class="error-container">
+          <span class="material-icons" style="font-size: 48px; color: #f44336; margin-bottom: 16px;">location_off</span>
+          <p>We need your location to show products near you.</p>
+          <button class="location-button" onclick="initApp()">
+            <span class="material-icons">my_location</span>
+            Enable Location
+          </button>
+        </div>
+      `;
+    }
+
+    // Show location not supported message
+    function showLocationNotSupported() {
+      loadingContainer.innerHTML = `
+        <div class="error-container">
+          <span class="material-icons" style="font-size: 48px; color: #f44336; margin-bottom: 16px;">error</span>
+          <p>Geolocation is not supported by your browser.</p>
+          <p>This app requires location services.</p>
+        </div>
+      `;
+    }
+
+    // Get user's location and start fetching products
+    function initApp() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    fetchNearbyProducts(userLocation);
+                },
+                error => {
+                    showLocationError();
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        } else {
+            showLocationNotSupported();
+        }
+    }
+
+    // Navigation handlers
     document.getElementById('category-nav').addEventListener('click', () => {
       window.location.href = "categorypage.html";
     });
@@ -121,6 +443,12 @@
     document.getElementById('profile-nav').addEventListener('click', () => {
       window.location.href = "profilepage.html";
     });
+    document.getElementById('sell-nav').addEventListener('click', () => {
+        window.location.href = "additem.html";
+    });
+
+    // Initialize the app
+    initApp();
   </script>
 </body>
 </html>
