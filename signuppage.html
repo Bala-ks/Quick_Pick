@@ -1,167 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Worker Login</title>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #cceeff, #99ddff);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 40px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Sign Up</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #cceeff, #99ddff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+        }
 
-    form {
-      background: white;
-      padding: 50px 60px;
-      border-radius: 30px;
-      box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
-      width: 600px;
-    }
+        form {
+            background: white;
+            padding: 50px 60px;
+            border-radius: 30px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+            width: 600px;
+        }
 
-    form h2 {
-      color: #0277BD;
-      text-align: center;
-      margin-bottom: 20px;
-    }
+        form h2 {
+            color: #0277BD;
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-    .input-field {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
 
-    .input-field label {
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 5px;
-      text-align: left;
-    }
+        .input-field label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            text-align: left;
+        }
 
-    .input-field input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-    }
+        .input-field input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
 
-    .input-field input:focus {
-      border-color: #0288D1;
-      box-shadow: 0 0 5px rgba(2, 136, 209, 0.4);
-    }
+        .input-field input:focus {
+            border-color: #0288D1;
+            box-shadow: 0 0 5px rgba(2, 136, 209, 0.4);
+        }
 
-    input[type="submit"] {
-      background-color: #0288D1;
-      color: white;
-      border: none;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 30px;
-      cursor: pointer;
-      margin-top: 15px;
-      transition: background 0.3s ease;
-      width: 100%;
-    }
+        .error-message {
+            color: red;
+            font-size: 12px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: none;
+        }
 
-    input[type="submit"]:hover {
-      background-color: #0277BD;
-    }
+        input[type="submit"] {
+            background-color: #0288D1;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s ease;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .extra-links {
-      margin-top: 15px;
-      font-size: 14px;
-      text-align: center;
-    }
+        input[type="submit"]:hover {
+            background-color: #0277BD;
+        }
 
-    .extra-links a {
-      color: #0288D1;
-      text-decoration: none;
-      font-weight: bold;
-    }
+        input[type="submit"]:disabled {
+            background-color: #BDBDBD;
+            cursor: not-allowed;
+        }
 
-    .extra-links a:hover {
-      text-decoration: underline;
-    }
-  </style>
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .extra-links {
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .extra-links a {
+            color: #0288D1;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .extra-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-  
-  <form>
+
+<form id="signupForm">
     <h2>Create Account</h2>
     <div class="input-field">
-      <label>Name :</label>
-      <input type="text" name="name" placeholder="Enter Your Name" required>
+        <label>Name :</label>
+        <input type="text" id="name" placeholder="Enter Your Name" required>
+        <span class="error-message" id="nameError"></span>
 
-      <label>Email :</label>
-      <input type="email" name="email" placeholder="Enter Your Valid Email Id" required>
+        <label>Email :</label>
+        <input type="email" id="email" placeholder="Enter Your Valid Email Id" required>
+        <span class="error-message" id="emailError"></span>
 
-      <label>Age :</label>
-      <input type="number" name="age" placeholder="Enter Your Age" required>
+        <label>Age :</label>
+        <input type="number" id="age" placeholder="Enter Your Age" required>
+        <span class="error-message" id="ageError"></span>
 
-      <label>Address :</label>
-      <input type="text" name="address" placeholder="Enter Your Address" required>
+        <label>Address :</label>
+        <input type="text" id="address" placeholder="Enter Your Address" required>
+        <span class="error-message" id="addressError"></span>
 
-      <label>Phone Number :</label>
-      <input type="tel" name="phone" placeholder="Enter Your Phone Number" required>
+        <label>Phone Number :</label>
+        <input type="tel" id="phone" placeholder="Enter Your Phone Number" required>
+        <span class="error-message" id="phoneError"></span>
 
-      <label>Password :</label>
-      <input type="password" name="password" placeholder="Enter Password" required>
+        <label>Password :</label>
+        <input type="password" id="password" placeholder="Enter Password" required>
+        <span class="error-message" id="passwordError"></span>
 
-      <label>Confirm Password :</label>
-      <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+        <label>Confirm Password :</label>
+        <input type="password" id="confirm_password" placeholder="Confirm Password" required>
+        <span class="error-message" id="confirmPasswordError"></span>
 
-      <input type="submit" value="Sign Up">
+        <input type="submit" value="Sign Up" id="signupButton">
     </div>
 
     <div class="extra-links">
-      <p>Already have an account? <a href="loginpage.html">Log In</a></p>
+        <p>Already have an account? <a href="loginpage.html">Log In</a></p>
     </div>
-  </form>
+</form>
 
-  <script>
-    document.querySelector("form").addEventListener("submit", function(event) {
-      event.preventDefault(); // stop auto submission until validated
+<script type="module">
+    // Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-      let name = document.querySelector("input[name='name']").value.trim();
-      let email = document.querySelector("input[name='email']").value.trim();
-      let age = document.querySelector("input[name='age']").value.trim();
-      let address = document.querySelector("input[name='address']").value.trim();
-      let phone = document.querySelector("input[name='phone']").value.trim();
-      let password = document.querySelector("input[name='password']").value;
-      let confirmPassword = document.querySelector("input[name='confirm_password']").value;
+    // Your Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0",
+        authDomain: "quickpick-1523f.firebaseapp.com",
+        projectId: "quickpick-1523f",
+        storageBucket: "quickpick-1523f.firebasestorage.app",
+        messagingSenderId: "814647987706",
+        appId: "1:814647987706:web:01595f83582fe3de0e2843",
+        measurementId: "G-MMK0VWMY8T"
+    };
 
-      let errorMessage = "";
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-      if (name.length < 3) errorMessage += "Name must be at least 3 characters long.\n";
+    // Get HTML elements
+    const signupForm = document.getElementById('signupForm');
+    const signupButton = document.getElementById('signupButton');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const ageInput = document.getElementById('age');
+    const addressInput = document.getElementById('address');
+    const phoneInput = document.getElementById('phone');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
 
-      let emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
-      if (!emailPattern.test(email)) errorMessage += "Enter a valid Email ID.\n";
+    // Get error message elements
+    const nameError = document.getElementById('nameError');
+    const emailError = document.getElementById('emailError');
+    const ageError = document.getElementById('ageError');
+    const addressError = document.getElementById('addressError');
+    const phoneError = document.getElementById('phoneError');
+    const passwordError = document.getElementById('passwordError');
+    const confirmPasswordError = document.getElementById('confirmPasswordError');
 
-      if (isNaN(age) || age < 10 || age > 120) errorMessage += "Enter a valid Age (10 - 120).\n";
+    // Helper function to show/hide error messages
+    function showErrors(errors) {
+        // Reset all errors first
+        document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
 
-      if (address.length < 5) errorMessage += "Enter a valid Address.\n";
+        // Display specific errors
+        for (const [field, message] of Object.entries(errors)) {
+            const errorElement = document.getElementById(field + 'Error');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+        }
+    }
 
-      let phonePattern = /^[0-9]{10}$/;
-      if (!phonePattern.test(phone)) errorMessage += "Enter a valid 10-digit Phone Number.\n";
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-      if (password.length < 6) errorMessage += "Password must be at least 6 characters long.\n";
+        // Get values
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const age = ageInput.value.trim();
+        const address = addressInput.value.trim();
+        const phone = phoneInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
 
-      if (password !== confirmPassword) errorMessage += "Passwords do not match.\n";
+        let errors = {};
 
-      if (errorMessage) {
-        alert("❌ Please fix the following errors:\n\n" + errorMessage);
-      } else {
-        alert("✅ Sign Up Successful!");
-        this.submit(); // submit form only if valid
-      }
+        // Frontend validation
+        if (name.length < 3) errors.name = 'Name must be at least 3 characters long.';
+        let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) errors.email = 'Enter a valid Email ID.';
+        if (isNaN(age) || age < 10 || age > 120) errors.age = 'Enter a valid Age (10 - 120).';
+        if (address.length < 5) errors.address = 'Enter a valid Address.';
+        const phonePattern = /^[0-9]{10}$/;
+        if (!phonePattern.test(phone)) errors.phone = 'Enter a valid 10-digit Phone Number.';
+        if (password.length < 6) errors.password = 'Password must be at least 6 characters long.';
+        if (password !== confirmPassword) errors.confirm_password = 'Passwords do not match.';
+
+        if (Object.keys(errors).length > 0) {
+            showErrors(errors);
+            return;
+        }
+
+        // Show loading state
+        signupButton.innerHTML = '<div class="spinner"></div>';
+        signupButton.disabled = true;
+        showErrors({}); // Clear old errors
+
+        try {
+            // Step 1: Create user in Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Step 2: Save additional user data to Firestore
+            const userRef = doc(db, "users", user.uid);
+            await setDoc(userRef, {
+                name: name,
+                email: email,
+                age: age,
+                address: address,
+                phone: phone,
+                created_at: new Date()
+            });
+
+            alert('✅ Sign Up Successful! Your account has been created.');
+            // Redirect to the homepage after successful signup
+            window.location.href = "homepage.html";
+
+        } catch (error) {
+            // Handle Firebase and Firestore errors
+            let errorMessage = "An error occurred. Please try again.";
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    errorMessage = 'The email address is already in use by another account.';
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = 'The email address is not valid.';
+                    break;
+                case 'auth/weak-password':
+                    errorMessage = 'The password is too weak.';
+                    break;
+                default:
+                    console.error('Firebase Error:', error);
+            }
+            alert('❌ Sign Up Failed: ' + errorMessage);
+        } finally {
+            // Reset button state
+            signupButton.innerHTML = 'Sign Up';
+            signupButton.disabled = false;
+        }
     });
-  </script>
+</script>
 </body>
 </html>
