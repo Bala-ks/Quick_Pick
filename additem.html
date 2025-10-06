@@ -4,470 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuickDeals - Sell Item</title>
+    
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <script 
+        src="https://upload-widget.cloudinary.com/latest/global/all.js" 
+        type="text/javascript">
+    </script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Roboto', Arial, sans-serif;
-        }
-        
-        body {
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        /* App Bar */
-        .app-bar {
-            background-color: #1976D2;
-            color: white;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .app-title {
-            font-weight: 700;
-            font-size: 20px;
-        }
-        
-        .app-bar-icon {
-            color: white;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: background-color 0.3s;
-        }
-        
-        .app-bar-icon:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        /* Form Content */
-        .form-content {
-            flex: 1;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        
-        .form-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #1976D2;
-            text-align: center;
-        }
-        
-        /* Form Container */
-        .form-container {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        .form-section {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .form-section:last-of-type {
-            border-bottom: none;
-        }
-        
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #1976D2;
-            display: flex;
-            align-items: center;
-        }
-        
-        .section-title .material-icons {
-            margin-right: 10px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .form-label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        
-        .form-input, .form-textarea, .form-select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
-            border-color: #1976D2;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
-        }
-        
-        .form-textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
-        .form-hint {
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .error-message {
-            color: #d32f2f;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
-        }
-        
-        /* Image Upload */
-        .image-upload {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .upload-box {
-            width: 120px;
-            height: 120px;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .upload-box:hover {
-            border-color: #1976D2;
-            background-color: rgba(25, 118, 210, 0.05);
-        }
-        
-        .upload-icon {
-            font-size: 30px;
-            color: #1976D2;
-            margin-bottom: 10px;
-        }
-        
-        .upload-text {
-            font-size: 14px;
-            color: #666;
-            text-align: center;
-        }
-        
-        .uploaded-image-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-        }
-        
-        .uploaded-image {
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-        
-        .remove-image {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-        
-        .remove-image:hover {
-            background: rgba(0, 0, 0, 0.8);
-        }
-        
-        /* Price Input */
-        .price-input {
-            display: flex;
-            align-items: center;
-        }
-        
-        .currency-symbol {
-            background: #f0f0f0;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-right: none;
-            border-radius: 8px 0 0 8px;
-            font-weight: 500;
-        }
-        
-        .price-field {
-            border-radius: 0 8px 8px 0;
-        }
-        
-        /* Checkbox Group */
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            transition: background 0.3s;
-        }
-        
-        .checkbox-item:hover {
-            background: #f0f0f0;
-        }
-        
-        .checkbox-item input {
-            margin-right: 8px;
-        }
-        
-        /* Form Actions */
-        .form-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-            position: sticky;
-            bottom: 70px;
-            background: white;
-            padding: 15px 0;
-            border-top: 1px solid #eee;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .btn .material-icons {
-            margin-right: 8px;
-        }
-        
-        .btn-cancel {
-            background: #f0f0f0;
-            color: #666;
-        }
-        
-        .btn-cancel:hover {
-            background: #e0e0e0;
-        }
-        
-        .btn-submit {
-            background: #1976D2;
-            color: white;
-        }
-        
-        .btn-submit:hover {
-            background: #1565C0;
-        }
-        
-        .btn-submit:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        /* Progress indicator */
-        .progress-bar {
-            height: 4px;
-            background: #e0e0e0;
-            border-radius: 2px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: #1976D2;
-            width: 0%;
-            transition: width 0.5s;
-        }
-        
-        /* Loading overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-        
-        .loading-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .loading-overlay p {
-            margin-top: 15px;
-            font-size: 1.2em;
-            color: #1976D2;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #1976D2;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Success message */
-        .success-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            text-align: center;
-            z-index: 1001;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-        
-        .success-message.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .success-icon {
-            font-size: 60px;
-            color: #4CAF50;
-            margin-bottom: 20px;
-        }
-        
-        /* Bottom Navigation */
-        .bottom-nav {
-            display: flex;
-            background-color: white;
-            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            z-index: 90;
-        }
-        
-        .nav-item {
-            flex: 1;
-            padding: 12px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            text-decoration: none;
-            font-size: 12px;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        
-        .nav-item:hover {
-            color: #1976D2;
-        }
-        
-        .nav-item.active {
-            color: #1976D2;
-        }
-        
-        .nav-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-        
-        /* Responsive */
+        /* --- CSS Styles (Unmodified) --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', Arial, sans-serif; }
+        body { background-color: #f5f5f5; color: #333; }
+        .app-container { display: flex; flex-direction: column; min-height: 100vh; }
+        .app-bar { background-color: #1976D2; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .app-title { font-weight: 700; font-size: 20px; }
+        .app-bar-icon { color: white; cursor: pointer; padding: 8px; border-radius: 50%; transition: background-color 0.3s; }
+        .app-bar-icon:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .form-content { flex: 1; padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
+        .form-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #1976D2; text-align: center; }
+        .form-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-section { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .form-section:last-of-type { border-bottom: none; }
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: #1976D2; display: flex; align-items: center; }
+        .section-title .material-icons { margin-right: 10px; }
+        .form-group { margin-bottom: 20px; position: relative; }
+        .form-label { display: block; font-weight: 500; margin-bottom: 8px; color: #333; }
+        .form-input, .form-textarea, .form-select { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; transition: all 0.3s; }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: #1976D2; outline: none; box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2); }
+        .form-textarea { min-height: 120px; resize: vertical; }
+        .form-hint { font-size: 14px; color: #666; margin-top: 5px; }
+        .error-message { color: #d32f2f; font-size: 14px; margin-top: 5px; display: none; }
+        .image-upload { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .upload-box { width: 120px; height: 120px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+        .upload-box:hover { border-color: #1976D2; background-color: rgba(25, 118, 210, 0.05); }
+        .upload-icon { font-size: 30px; color: #1976D2; margin-bottom: 10px; }
+        .upload-text { font-size: 14px; color: #666; text-align: center; }
+        .uploaded-image-container { position: relative; width: 120px; height: 120px; }
+        .uploaded-image { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; }
+        .remove-image { position: absolute; top: 5px; right: 5px; background: rgba(0, 0, 0, 0.6); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: background 0.3s; line-height: 1; }
+        .remove-image:hover { background: rgba(0, 0, 0, 0.8); }
+        .price-input { display: flex; align-items: center; }
+        .currency-symbol { background: #f0f0f0; padding: 12px 15px; border: 1px solid #ddd; border-right: none; border-radius: 8px 0 0 8px; font-weight: 500; }
+        .price-field { border-radius: 0 8px 8px 0; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; }
+        .checkbox-item { display: flex; align-items: center; padding: 8px 12px; background: #f9f9f9; border-radius: 8px; transition: background 0.3s; cursor: pointer; }
+        .checkbox-item:hover { background: #f0f0f0; }
+        .checkbox-item input { margin-right: 8px; }
+        .form-actions { display: flex; justify-content: space-between; margin-top: 30px; position: sticky; bottom: 70px; background: white; padding: 15px 0; border-top: 1px solid #eee; }
+        .btn { padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; border: none; display: flex; align-items: center; justify-content: center; user-select: none; }
+        .btn .material-icons { margin-right: 8px; }
+        .btn-cancel { background: #f0f0f0; color: #666; }
+        .btn-cancel:hover { background: #e0e0e0; }
+        .btn-submit { background: #1976D2; color: white; }
+        .btn-submit:hover:not(:disabled) { background: #1565C0; }
+        .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+        .progress-bar { height: 4px; background: #e0e0e0; border-radius: 2px; margin-bottom: 20px; overflow: hidden; display: block; width: 100%; }
+        .progress-fill { height: 100%; background: #1976D2; width: 0%; transition: width 0.5s ease-out; }
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .loading-overlay.visible { opacity: 1; visibility: visible; }
+        .loading-overlay p { margin-top: 15px; font-size: 1.2em; color: #1976D2; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #1976D2; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .success-message { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); text-align: center; z-index: 1001; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .success-message.visible { opacity: 1; visibility: visible; }
+        .success-icon { font-size: 60px; color: #4CAF50; margin-bottom: 20px; }
+        .bottom-nav { display: flex; background-color: white; box-shadow: 0 -2px 4px rgba(0,0,0,0.1); position: fixed; bottom: 0; width: 100%; z-index: 90; }
+        .nav-item { flex: 1; padding: 12px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; text-decoration: none; font-size: 12px; cursor: pointer; transition: color 0.3s; }
+        .nav-item:hover { color: #1976D2; }
+        .nav-item.active { color: #1976D2; }
+        .nav-icon { font-size: 24px; margin-bottom: 4px; }
         @media (max-width: 600px) {
-            .form-actions {
-                flex-direction: column;
-                gap: 15px;
-                position: static;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-            
-            .image-upload {
-                justify-content: center;
-            }
-            
-            .checkbox-group {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .form-section {
-                padding-bottom: 10px;
-            }
+            .form-actions { flex-direction: column; gap: 15px; position: static; }
+            .btn { width: 100%; }
+            .image-upload { justify-content: center; }
+            .checkbox-group { flex-direction: column; gap: 10px; }
+            .form-section { padding-bottom: 10px; }
         }
     </style>
 </head>
@@ -548,10 +164,10 @@
                     <div class="form-group">
                         <label class="form-label">Negotiable</label>
                         <div class="checkbox-group">
-                            <div class="checkbox-item">
+                            <label class="checkbox-item" for="negotiable">
                                 <input type="checkbox" id="negotiable">
-                                <label for="negotiable">Price is negotiable</label>
-                            </div>
+                                <span>Price is negotiable</span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -561,13 +177,12 @@
                     
                     <div class="form-group">
                         <label class="form-label">Upload Photos</label>
-                        <p class="form-hint">Add up to 5 photos of your item.</p>
+                        <p class="form-hint">Add up to 5 photos. Uploads are fast via Cloudinary!</p>
                         
                         <div class="image-upload" id="image-upload-container">
                             <div class="upload-box" id="upload-trigger">
                                 <span class="material-icons upload-icon">add</span>
                                 <span class="upload-text">Add Photo</span>
-                                <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
                             </div>
                         </div>
                     </div>
@@ -578,9 +193,9 @@
                     
                     <div class="form-group">
                         <label class="form-label" for="location">Your Location*</label>
-                        <input type="text" id="location" class="form-input" placeholder="City, State" required disabled>
-                        <p class="form-hint" id="location-hint">Getting your location...</p>
-                        <p class="error-message" id="location-error">Please enter your location</p>
+                        <input type="text" id="location" class="form-input" placeholder="Getting coordinates..." required disabled>
+                        <p class="form-hint" id="location-hint">Getting your current GPS coordinates...</p>
+                        <p class="error-message" id="location-error">Please enable/enter your location</p>
                         <input type="hidden" id="latitude">
                         <input type="hidden" id="longitude">
                     </div>
@@ -588,18 +203,18 @@
                     <div class="form-group">
                         <label class="form-label">Shipping Options</label>
                         <div class="checkbox-group">
-                            <div class="checkbox-item">
+                            <label class="checkbox-item" for="shipping_local">
                                 <input type="checkbox" id="shipping_local" checked>
-                                <label for="shipping_local">Local Pickup</label>
-                            </div>
-                            <div class="checkbox-item">
+                                <span>Local Pickup</span>
+                            </label>
+                            <label class="checkbox-item" for="shipping_delivery">
                                 <input type="checkbox" id="shipping_delivery" checked>
-                                <label for="shipping_delivery">Local Delivery (30-60 km)</label>
-                            </div>
-                            <div class="checkbox-item">
+                                <span>Local Delivery (30-60 km)</span>
+                            </label>
+                            <label class="checkbox-item" for="shipping_national">
                                 <input type="checkbox" id="shipping_national">
-                                <label for="shipping_national">National Shipping</label>
-                            </div>
+                                <span>National Shipping</span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -627,7 +242,7 @@
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-cancel"><span class="material-icons">cancel</span>Cancel</button>
+                    <button type="button" class="btn btn-cancel" id="cancel-button"><span class="material-icons">cancel</span>Cancel</button>
                     <button type="submit" class="btn btn-submit" id="submit-button"><span class="material-icons">check_circle</span>Publish Item</button>
                 </div>
             </form>
@@ -669,17 +284,30 @@
         </div>
     </div>
 
+    <script 
+        src="https://upload-widget.cloudinary.com/latest/global/all.js" 
+        type="text/javascript">
+    </script>
+
     <script type="module">
+        // Import necessary Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp, GeoPoint } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
         // =========================================================================
-        // Firebase Configuration
+        // 1. CONFIGURATION 
         // =========================================================================
+        const MAX_IMAGE_COUNT = 5;
+        
+        // YOUR CLOUDINARY CREDENTIALS 
+        const CLOUDINARY_CLOUD_NAME = "db0qv1cch"; 
+        const CLOUDINARY_UPLOAD_PRESET = "Quick_Pick"; 
+        
+        const FIREBASE_API_KEY = "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0"; 
+        
         const firebaseConfig = {
-            apiKey: "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0",
+            apiKey: FIREBASE_API_KEY,
             authDomain: "quickpick-1523f.firebaseapp.com",
             projectId: "quickpick-1523f",
             storageBucket: "quickpick-1523f.appspot.com",
@@ -688,12 +316,11 @@
             measurementId: "G-MMK0VWMY8T"
         };
         
-        // Initialize Firebase
+        // =========================================================================
+        // 2. INITIALIZATION AND AUTH
+        // =========================================================================
         const app = initializeApp(firebaseConfig);
-        
-        // Initialize services
         const db = getFirestore(app);
-        const storage = getStorage(app);
         const auth = getAuth(app);
         
         let currentUser = null;
@@ -701,13 +328,12 @@
             if (user) {
                 currentUser = user;
             } else {
-                alert("You must log in first!");
-                window.location.href = "loginpage.html";
+                console.warn("User not logged in. Proceeding with dummy user for demo.");
             }
         });
         
         // =========================================================================
-        // Get HTML Elements
+        // 3. GET ELEMENTS AND STATE
         // =========================================================================
         const form = document.getElementById('item-form');
         const submitButton = document.getElementById('submit-button');
@@ -718,237 +344,206 @@
         const locationInput = document.getElementById('location');
         const latitudeInput = document.getElementById('latitude');
         const longitudeInput = document.getElementById('longitude');
-        const fileInput = document.getElementById('file-input');
+        const locationHint = document.getElementById('location-hint');
         const imageUploadContainer = document.getElementById('image-upload-container');
         const uploadTrigger = document.getElementById('upload-trigger');
         
-        let uploadedFiles = [];
-        
-        // =========================================================================
-        // Functions
-        // =========================================================================
+        let uploadedImageURLs = []; 
 
-        // Geolocation setup on page load
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    latitudeInput.value = lat;
-                    longitudeInput.value = lng;
-                    
-                    const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=YOUR_GOOGLE_MAPS_API_KEY`; // REPLACE WITH YOUR API KEY
-                    fetch(geocodingUrl)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.results && data.results.length > 0) {
-                                locationInput.value = data.results[0].formatted_address;
-                            } else {
-                                locationInput.value = `Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-                            }
-                            locationInput.disabled = false;
-                            document.getElementById('location-hint').textContent = "Your location has been auto-detected.";
-                        })
-                        .catch(error => {
-                            console.error("Geocoding failed: ", error);
-                            locationInput.placeholder = "Failed to get location. Please enter manually.";
-                            locationInput.disabled = false;
-                        });
-                }, error => {
-                    console.error("Geolocation error: ", error);
-                    locationInput.placeholder = "Geolocation failed. Please enter your city/state.";
-                    locationInput.disabled = false;
-                    document.getElementById('location-hint').textContent = "Failed to get location. Please enter your location manually.";
-                });
-            } else {
-                locationInput.placeholder = "Geolocation not supported. Please enter your city/state.";
-                locationInput.disabled = false;
-                document.getElementById('location-hint').textContent = "Geolocation not supported by your browser. Please enter your location manually.";
+        // =========================================================================
+        // CLOUDINARY WIDGET INTEGRATION
+        // =========================================================================
+        
+        function updateImagePreview(url) {
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'uploaded-image-container';
+            
+            const img = document.createElement('img');
+            img.className = 'uploaded-image';
+            const thumbnailUrl = url.replace("/upload/", "/upload/c_thumb,w_120,h_120,q_auto:best,f_auto/");
+            img.src = thumbnailUrl; 
+
+            const removeBtn = document.createElement('span');
+            removeBtn.className = 'remove-image';
+            removeBtn.innerHTML = '×';
+            
+            imageContainer.appendChild(img);
+            imageContainer.appendChild(removeBtn);
+            imageUploadContainer.insertBefore(imageContainer, uploadTrigger);
+            
+            uploadedImageURLs.push(url); 
+            
+            removeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const indexToRemove = uploadedImageURLs.indexOf(url);
+                if (indexToRemove > -1) {
+                    uploadedImageURLs.splice(indexToRemove, 1);
+                }
+                imageUploadContainer.removeChild(imageContainer);
+                
+                if (uploadedImageURLs.length < MAX_IMAGE_COUNT) {
+                    uploadTrigger.style.display = 'flex';
+                }
+                updateFormProgress();
+            });
+
+            if (uploadedImageURLs.length >= MAX_IMAGE_COUNT) {
+                uploadTrigger.style.display = 'none';
             }
         }
         
-        getLocation();
-        
-        // Back button functionality
-        document.getElementById('back-button').addEventListener('click', function() {
-            if (confirm('Are you sure you want to leave? All unsaved changes will be lost.')) {
-                window.history.back();
-            }
-        });
-
-        // Help button functionality
-        document.getElementById('help-button').addEventListener('click', function() {
-            alert('Need help? Contact our support team at support@quickdeals.com or call +1-800-QUICKDEALS');
-        });
-
-        // Bottom navigation functionality
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                if (this.id !== 'sell-nav') {
-                    e.preventDefault();
-                    if (confirm('Are you sure you want to leave? All unsaved changes will be lost.')) {
-                        window.location.href = this.getAttribute('href');
-                    }
+        function initCloudinaryWidget() {
+            const myWidget = cloudinary.createUploadWidget({
+                cloudName: CLOUDINARY_CLOUD_NAME,
+                uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+                sources: ['local', 'url', 'camera'],
+                multiple: true,
+                maxFiles: MAX_IMAGE_COUNT,
+                maxImageFileSize: 5000000, 
+            }, (error, result) => {
+                if (result && result.event === "success") {
+                    updateImagePreview(result.info.secure_url); 
+                } 
+                
+                if (result && (result.event === "queue-end" || result.event === "close")) {
+                    loadingOverlay.classList.remove('visible');
+                }
+                
+                if (error) {
+                    console.error("Cloudinary Error:", error);
+                    alert("A Cloudinary upload error occurred. Please check the console.");
+                    loadingOverlay.classList.remove('visible');
                 }
             });
-        });
+            
+            uploadTrigger.addEventListener('click', function() {
+                if (uploadedImageURLs.length < MAX_IMAGE_COUNT) {
+                    myWidget.update({ 
+                        maxFiles: MAX_IMAGE_COUNT - uploadedImageURLs.length 
+                    });
+                    
+                    loadingOverlay.classList.add('visible');
+                    loadingText.textContent = "Waiting for image selection...";
+                    
+                    myWidget.open();
+                } else {
+                    alert(`You have reached the maximum limit of ${MAX_IMAGE_COUNT} images.`);
+                }
+            });
+        }
         
-        // Track form progress
+        // =========================================================================
+        // GEOLOCATION AND UTILITY FUNCTIONS (MODIFIED TO UPLOAD ONLY COORDINATES)
+        // =========================================================================
+
+        async function getLocation() {
+            locationInput.disabled = true;
+            locationInput.placeholder = "Locating you...";
+            locationHint.textContent = "Getting your current GPS coordinates...";
+            latitudeInput.value = '';
+            longitudeInput.value = '';
+
+            if (!navigator.geolocation) {
+                locationInput.disabled = false;
+                locationInput.placeholder = "Geolocation not supported. Enter coordinates manually.";
+                locationHint.textContent = "Geolocation not supported. Please manually enter: LATITUDE, LONGITUDE";
+                return;
+            }
+
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { 
+                        enableHighAccuracy: true, 
+                        timeout: 10000, 
+                        maximumAge: 60000 
+                    });
+                });
+
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                latitudeInput.value = lat;
+                longitudeInput.value = lng;
+                
+                // FIX: Set the input value to the raw coordinates string
+                locationInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`; 
+                
+                locationInput.disabled = false;
+                locationHint.textContent = `Current GPS Coordinates Detected. (Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}).`;
+                
+                updateFormProgress();
+
+            } catch (error) {
+                console.error("Geolocation error: ", error);
+                locationInput.disabled = false;
+                locationInput.placeholder = "Geolocation failed. Please enter coordinates manually.";
+                locationHint.textContent = "Failed to get location. Please enter coordinates manually (LATITUDE, LONGITUDE).";
+            }
+        }
+        
         function updateFormProgress() {
             const requiredFields = form.querySelectorAll('[required]');
             let filledCount = 0;
             
             requiredFields.forEach(field => {
-                if (field.value.trim() !== '') {
+                const value = field.value.trim();
+                const type = field.type;
+
+                if ((type === 'number' && parseFloat(value) > 0) || (type !== 'number' && value)) {
                     filledCount++;
                 }
             });
+
+            if (uploadedImageURLs.length > 0) {
+                filledCount++;
+            }
             
-            const progress = (filledCount / requiredFields.length) * 100;
+            const totalRequired = requiredFields.length + 1;
+            
+            const progress = (filledCount / totalRequired) * 100;
             progressFill.style.width = `${progress}%`;
+            
+            const allRequiredFilled = filledCount === totalRequired;
+            submitButton.disabled = !allRequiredFilled;
         }
         
-        // Add input event listeners to all form fields
-        const formFields = form.querySelectorAll('input, textarea, select');
-        formFields.forEach(field => {
-            field.addEventListener('input', updateFormProgress);
-            field.addEventListener('change', updateFormProgress);
-        });
-        
-        // Image upload functionality
-        uploadTrigger.addEventListener('click', function() {
-            fileInput.click();
-        });
-        
-        fileInput.addEventListener('change', function(e) {
-            if (e.target.files && e.target.files.length > 0) {
-                const filesToAdd = Array.from(e.target.files).slice(0, 5 - uploadedFiles.length);
-                
-                filesToAdd.forEach(file => {
-                    if (!file.type.match('image.*')) {
-                        alert('Please select image files only');
-                        return;
-                    }
-                    
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const imageContainer = document.createElement('div');
-                        imageContainer.className = 'uploaded-image-container';
-                        
-                        const img = document.createElement('img');
-                        img.className = 'uploaded-image';
-                        img.src = e.target.result;
-                        
-                        const removeBtn = document.createElement('span');
-                        removeBtn.className = 'remove-image';
-                        removeBtn.innerHTML = '×';
-                        
-                        imageContainer.appendChild(img);
-                        imageContainer.appendChild(removeBtn);
-                        
-                        imageUploadContainer.insertBefore(imageContainer, uploadTrigger);
-                        
-                        uploadedFiles.push({ file: file, element: imageContainer });
+        // =========================================================================
+        // FORM SUBMISSION (MODIFIED TO SAVE ONLY COORDINATES)
+        // =========================================================================
 
-                        removeBtn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            const indexToRemove = uploadedFiles.findIndex(item => item.element === imageContainer);
-                            if (indexToRemove > -1) {
-                                uploadedFiles.splice(indexToRemove, 1);
-                            }
-                            imageUploadContainer.removeChild(imageContainer);
-                            updateFormProgress();
-                        });
-                        
-                        updateFormProgress();
-                    };
-                    
-                    reader.readAsDataURL(file);
-                });
-                
-                fileInput.value = '';
-            }
-        });
-
-        // Form submission with Firebase
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            let isValid = true;
-            
-            // Validate required fields
-            const requiredFields = [
-                {id: 'title', error: 'title-error'},
-                {id: 'category', error: 'category-error'},
-                {id: 'condition', error: 'condition-error'},
-                {id: 'description', error: 'description-error'},
-                {id: 'price', error: 'price-error'},
-                {id: 'location', error: 'location-error'},
-                {id: 'contact-name', error: 'name-error'},
-                {id: 'contact-email', error: 'email-error'},
-                {id: 'contact-phone', error: 'phone-error'}
-            ];
-            
-            requiredFields.forEach(field => {
-                const input = document.getElementById(field.id);
-                const error = document.getElementById(field.error);
-                
-                if (!input.value.trim()) {
-                    error.style.display = 'block';
-                    input.style.borderColor = '#d32f2f';
-                    isValid = false;
-                } else {
-                    error.style.display = 'none';
-                    input.style.borderColor = '#ddd';
-                    
-                    if (field.id === 'contact-email') {
-                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                        if (!emailRegex.test(input.value)) {
-                            error.style.display = 'block';
-                            input.style.borderColor = '#d32f2f';
-                            isValid = false;
-                        }
-                    }
-                    
-                    if (field.id === 'price' && parseFloat(input.value) <= 0) {
-                        error.style.display = 'block';
-                        input.style.borderColor = '#d32f2f';
-                        isValid = false;
-                    }
-                }
-            });
-            
-            if (!isValid) {
-                const firstError = form.querySelector('.error-message[style="display: block"]');
-                if (firstError) {
-                    firstError.closest('.form-group').scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
+            // Validate location input format if it was entered manually
+            const locationValue = locationInput.value.trim();
+            const coordsMatch = locationValue.match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/);
+
+            let lat = parseFloat(latitudeInput.value || 0);
+            let lng = parseFloat(longitudeInput.value || 0);
+
+            if (!coordsMatch) {
+                // If it's a manual entry and doesn't look like "lat, lng", flag an error
+                alert('Location must be entered as "Latitude, Longitude" for accurate listing.');
+                locationInput.focus();
                 return;
+            } else if (coordsMatch && locationInput.disabled === false) {
+                // If user refined/manually entered coordinates, use them to update hidden fields
+                lat = parseFloat(coordsMatch[1]);
+                lng = parseFloat(coordsMatch[2]);
             }
             
+            if (!form.reportValidity() || uploadedImageURLs.length === 0) {
+                 alert('Please fill out all required fields and upload at least one image.');
+                 return;
+            }
+            
+            submitButton.disabled = true;
+            loadingOverlay.classList.add('visible');
+            loadingText.textContent = `Saving product details...`;
+            
             try {
-                loadingOverlay.classList.add('visible');
-                submitButton.disabled = true;
+                const userId = currentUser ? currentUser.uid : "unauthenticated_demo_user";
+                const imageUrls = uploadedImageURLs;
                 
-                // Upload images to Firebase Storage
-                const imageUrls = [];
-                loadingText.textContent = `Uploading ${uploadedFiles.length} images...`;
-                for (const fileObj of uploadedFiles) {
-                    const storageRef = ref(storage, `product_images/${Date.now()}_${fileObj.file.name}`);
-                    const snapshot = await uploadBytes(storageRef, fileObj.file);
-                    const downloadURL = await getDownloadURL(snapshot.ref);
-                    imageUrls.push(downloadURL);
-                }
-
-                if (!currentUser) {
-                    throw new Error("You must be logged in to sell an item.");
-                }
-
-                loadingText.textContent = `Saving product details...`;
                 const productData = {
                     title: document.getElementById('title').value,
                     category: document.getElementById('category').value,
@@ -961,18 +556,18 @@
                         email: document.getElementById('contact-email').value,
                         phone: document.getElementById('contact-phone').value,
                     },
-                    location: new GeoPoint(
-                        parseFloat(latitudeInput.value),
-                        parseFloat(longitudeInput.value)
-                    ),
-                    images: imageUrls,
+                    // SAVE: GeoPoint object for filtering
+                    geo: new GeoPoint(lat, lng), 
+                    // SAVE: Coordinates string for display on the front end (e.g., "30.1234, -80.5678")
+                    location_text: locationValue, 
+                    images: imageUrls, 
                     shipping_options: {
                         local_pickup: document.getElementById('shipping_local').checked,
                         local_delivery: document.getElementById('shipping_delivery').checked,
                         national_shipping: document.getElementById('shipping_national').checked
                     },
                     status: 'available',
-                    userId: currentUser.uid,
+                    userId: userId,
                     createdAt: serverTimestamp()
                 };
 
@@ -985,12 +580,36 @@
                 console.error("Error publishing item: ", error);
                 loadingOverlay.classList.remove('visible');
                 submitButton.disabled = false;
-                alert('An error occurred. Please try again. ' + error.message);
+                alert('An error occurred while publishing. Please check console for details.');
             }
         });
         
-        // Cancel button functionality
-        document.querySelector('.btn-cancel').addEventListener('click', function() {
+        // =========================================================================
+        // 8. INITIALIZATION AND EVENT LISTENERS
+        // =========================================================================
+        
+        // Initialize Cloudinary Widget and Geolocation on page load
+        initCloudinaryWidget(); 
+        getLocation();
+        
+        // Initial form progress check
+        updateFormProgress();
+        
+        // Event listeners for form progress updates
+        const formFields = form.querySelectorAll('input, textarea, select');
+        formFields.forEach(field => {
+            field.addEventListener('input', updateFormProgress);
+            field.addEventListener('change', updateFormProgress);
+        });
+        
+        // Navigation and Utility Listeners
+        document.getElementById('back-button').addEventListener('click', () => {
+             if (confirm('Are you sure you want to leave? All unsaved changes will be lost.')) {
+                 window.history.back();
+            }
+        });
+
+        document.getElementById('cancel-button').addEventListener('click', () => {
             if (confirm('Are you sure you want to cancel? All entered data will be lost.')) {
                 window.history.back();
             }
@@ -1001,7 +620,21 @@
             window.location.href = 'homepage.html';
         });
 
-        updateFormProgress();
+        document.getElementById('help-button').addEventListener('click', function() {
+            alert('Need help? Contact our support team at support@quickdeals.com or call +1-800-QUICKDEALS');
+        });
+        
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (this.id !== 'sell-nav' && form.checkValidity() === false) { 
+                    e.preventDefault();
+                    if (confirm('You have unsaved form data. Are you sure you want to leave this page?')) {
+                        window.location.href = this.getAttribute('href');
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>

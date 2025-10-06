@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickDeals - My Products</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    body {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    /* App Bar */
+    .app-bar {
+      background-color: #1976D2;
+      color: white;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .app-title {
+      font-weight: 700;
+      font-size: 20px;
+    }
+    .app-bar-icon {
+      color: white;
+      cursor: pointer;
+    }
+    /* Content */
+    .content {
+      flex: 1;
+      padding: 20px;
+    }
+    /* Products Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .product-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .product-image {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+    .product-info {
+      padding: 12px;
+    }
+    .product-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .product-price {
+      font-weight: 700;
+      color: #1976D2;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    .product-condition {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+    .product-status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-available {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .status-sold {
+      background: #ffebee;
+      color: #c62828;
+    }
+    /* Loading Spinner */
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 50px;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1976D2;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: #666;
+    }
+    .empty-icon {
+      font-size: 60px;
+      color: #ddd;
+      margin-bottom: 15px;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      border: none;
+      background: #1976D2;
+      color: white;
+      text-decoration: none;
+      margin-top: 20px;
+    }
+    .btn-primary:hover {
+      background: #1565C0;
+    }
+    .btn-primary .material-icons {
+      margin-right: 8px;
+    }
+    /* Filter Section */
+    .filter-section {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .filter-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .filter-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-option {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .filter-option.active {
+      background: #1976D2;
+      color: white;
+      border-color: #1976D2;
+    }
+    /* Bottom Navigation */
+    .bottom-nav {
+      display: flex;
+      background-color: white;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+    .nav-item {
+      flex: 1;
+      padding: 12px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      text-decoration: none;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .nav-item.active {
+      color: #1976D2;
+    }
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .products-grid {
+        grid-template-columns: 1fr;
+      }
+      .filter-options {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- App Bar -->
+    <div class="app-bar">
+      <span class="material-icons app-bar-icon" id="back-button">arrow_back</span>
+      <span class="app-title">My Products</span>
+      <span class="material-icons app-bar-icon" id="add-product-btn">add</span>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Filter Section -->
+      <div class="filter-section">
+        <div class="filter-title">Filter by Status</div>
+        <div class="filter-options">
+          <div class="filter-option active" data-filter="all">All</div>
+          <div class="filter-option" data-filter="available">Available</div>
+          <div class="filter-option" data-filter="sold">Sold</div>
+        </div>
+      </div>
+
+      <!-- Products Container -->
+      <div id="products-container">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <a class="nav-item" id="home-nav" href="homepage.html">
+        <span class="material-icons nav-icon">home</span>
+        <span>Home</span>
+      </a>
+      <a class="nav-item" id="category-nav" href="categorypage.html">
+        <span class="material-icons nav-icon">category</span>
+        <span>Category</span>
+      </a>
+      <a class="nav-item" id="sell-nav" href="additem.html">
+        <span class="material-icons nav-icon">add_box</span>
+        <span>Sell</span>
+      </a>
+      <a class="nav-item" id="saved-nav" href="savedpage.html">
+        <span class="material-icons nav-icon">shopping_cart</span>
+        <span>Cart</span>
+      </a>
+      <a class="nav-item" id="profile-nav" href="profilepage.html">
+        <span class="material-icons nav-icon">person</span>
+        <span>Profile</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0",
+      authDomain: "quickpick-1523f.firebaseapp.com",
+      projectId: "quickpick-1523f",
+      storageBucket: "quickpick-1523f.appspot.com",
+      messagingSenderId: "814647987706",
+      appId: "1:814647987706:web:01595f83582fe3de0e2843",
+      measurementId: "G-MMK0VWMY8T"
+    };
+    
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    
+    // Initialize services
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    
+    let currentUser = null;
+    let allProducts = [];
+    let currentFilter = 'all';
+    
+    // DOM elements
+    const productsContainer = document.getElementById('products-container');
+    const filterOptions = document.querySelectorAll('.filter-option');
+    
+    // Check authentication state
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadUserProducts(user.uid);
+      } else {
+        // Redirect to login if not authenticated
+        alert("You must log in first!");
+        window.location.href = "loginpage.html";
+      }
+    });
+    
+    // Load user's products from Firestore
+    async function loadUserProducts(userId) {
+      try {
+        productsContainer.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+        
+        // Query products for the current user
+        const productsQuery = query(
+          collection(db, 'products'),
+          where('userId', '==', userId)
+        );
+        
+        const querySnapshot = await getDocs(productsQuery);
+        
+        if (querySnapshot.empty) {
+          productsContainer.innerHTML = `
+            <div class="empty-state">
+              <span class="material-icons empty-icon">inventory_2</span>
+              <h3>No Products Yet</h3>
+              <p>You haven't listed any items for sale yet.</p>
+              <button class="btn-primary" id="add-first-product">
+                <span class="material-icons">add</span>
+                Add Your First Product
+              </button>
+            </div>
+          `;
+          
+          document.getElementById('add-first-product').addEventListener('click', () => {
+            window.location.href = "additem.html";
+          });
+          
+          return;
+        }
+        
+        // Store all products
+        allProducts = [];
+        
+        // Sort documents by creation date, descending
+        const sortedDocs = querySnapshot.docs.sort((a, b) => {
+            const timeA = a.data().createdAt?.toMillis() || 0;
+            const timeB = b.data().createdAt?.toMillis() || 0;
+            return timeB - timeA;
+        });
+
+        sortedDocs.forEach((doc) => {
+          const product = doc.data();
+          const productId = doc.id;
+          allProducts.push({ ...product, id: productId });
+        });
+        
+        // Display products based on current filter
+        displayFilteredProducts();
+        
+      } catch (error) {
+        console.error("Error loading user products:", error);
+        productsContainer.innerHTML = `
+          <div class="empty-state">
+            <span class="material-icons empty-icon">error</span>
+            <h3>Error Loading Products</h3>
+            <p>There was a problem loading your products. Please try again.</p>
+          </div>
+        `;
+      }
+    }
+    
+    // Display products based on current filter
+    function displayFilteredProducts() {
+      const filteredProducts = allProducts.filter(product => {
+        if (currentFilter === 'all') return true;
+        return product.status === currentFilter;
+      });
+      
+      if (filteredProducts.length === 0) {
+        productsContainer.innerHTML = `
+          <div class="empty-state">
+            <span class="material-icons empty-icon">search</span>
+            <h3>No Products Found</h3>
+            <p>No products match your current filter.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let productsHTML = '<div class="products-grid">';
+      
+      filteredProducts.forEach((product) => {
+        // Format price
+        const formattedPrice = product.price ? `₹${product.price.toLocaleString()}` : 'Price not set';
+        
+        // Create product card
+        productsHTML += `
+          <div class="product-card" data-product-id="${product.id}">
+            <img src="${product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/300/1976D2/FFFFFF?text=No+Image'}" 
+                 alt="${product.title}" class="product-image">
+            <div class="product-info">
+              <div class="product-title">${product.title || 'Untitled'}</div>
+              <div class="product-price">${formattedPrice}</div>
+              <div class="product-condition">${product.condition || 'Condition not specified'}</div>
+              <span class="product-status ${product.status === 'available' ? 'status-available' : 'status-sold'}">
+                ${product.status === 'available' ? 'Available' : 'Sold'}
+              </span>
+            </div>
+          </div>
+        `;
+      });
+      
+      productsHTML += '</div>';
+      productsContainer.innerHTML = productsHTML;
+      
+      // Add click event to product cards
+      document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const productId = this.getAttribute('data-product-id');
+          // Navigate to product details page
+          window.location.href = `myproductdetails.html?id=${productId}`;
+        });
+      });
+    }
+    
+    // Filter functionality
+    filterOptions.forEach(option => {
+      option.addEventListener('click', function() {
+        // Update active filter
+        filterOptions.forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Set current filter
+        currentFilter = this.dataset.filter;
+        
+        // Display filtered products
+        displayFilteredProducts();
+      });
+    });
+    
+    // Back button functionality
+    document.getElementById('back-button').addEventListener('click', function() {
+      window.history.back();
+    });
+
+    // Add product button
+    document.getElementById('add-product-btn').addEventListener('click', function() {
+      window.location.href = "additem.html";
+    });
+
+    // Navigation functionality
+    document.getElementById('home-nav').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = "homepage.html";
+    });
+    
+    document.getElementById('category-nav').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = "categorypage.html";
+    });
+    
+    document.getElementById('sell-nav').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = "additem.html";
+    });
+    
+    document.getElementById('saved-nav').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = "savedpage.html";
+    });
+    
+    document.getElementById('profile-nav').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = "profilepage.html";
+    });
+  </script>
+</body>
+</html>

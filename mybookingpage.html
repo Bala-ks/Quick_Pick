@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickDeals - My Bookings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        /* App Bar */
+        .app-bar {
+            background-color: #1976D2;
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .app-title {
+            font-weight: 700;
+            font-size: 20px;
+        }
+        .app-bar-icon {
+            color: white;
+            cursor: pointer;
+        }
+        /* Content */
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .filter-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .filter-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-option {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-option.active {
+            background: #1976D2;
+            color: white;
+            border-color: #1976D2;
+        }
+        /* Bookings List */
+        .bookings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .booking-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .booking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .booking-id {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+        .booking-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-pending {
+            background: #FFF3E0;
+            color: #EF6C00;
+        }
+        .status-confirmed {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        .status-shipped {
+            background: #E3F2FD;
+            color: #1976D2;
+        }
+        .status-delivered {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        .status-cancelled {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+        .booking-product {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .product-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .product-info {
+            flex: 1;
+        }
+        .product-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .product-price {
+            font-weight: 700;
+            color: #1976D2;
+            font-size: 18px;
+        }
+        .booking-details {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .detail-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .detail-value {
+            font-weight: 500;
+            text-align: right;
+        }
+        .buyer-info {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .buyer-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .buyer-contact {
+            font-size: 14px;
+            color: #666;
+        }
+        .status-message {
+            background: #E3F2FD;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #1976D2;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .status-message.pending {
+            background: #FFF3E0;
+            border-left-color: #EF6C00;
+        }
+        .status-message.confirmed {
+            background: #E8F5E9;
+            border-left-color: #2E7D32;
+        }
+        .status-message.shipped {
+            background: #E3F2FD;
+            border-left-color: #1976D2;
+        }
+        .status-message.delivered {
+            background: #E8F5E9;
+            border-left-color: #2E7D32;
+        }
+        .status-message.cancelled {
+            background: #FFEBEE;
+            border-left-color: #C62828;
+        }
+        .booking-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .btn-primary {
+            background: #1976D2;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1565C0;
+        }
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #388E3C;
+        }
+        .btn-secondary {
+            background: #757575;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #616161;
+        }
+        .btn-danger {
+            background: #d32f2f;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+        }
+        .empty-icon {
+            font-size: 60px;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1976D2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: flex;
+            background-color: white;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+        }
+        .nav-item {
+            flex: 1;
+            padding: 12px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            text-decoration: none;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .nav-item.active {
+            color: #1976D2;
+        }
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-options {
+                flex-direction: column;
+            }
+            .booking-product {
+                flex-direction: column;
+            }
+            .product-image {
+                width: 100%;
+                height: 200px;
+            }
+            .booking-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-bar">
+            <span class="material-icons app-bar-icon" id="back-button">arrow_back</span>
+            <span class="app-title">My Bookings</span>
+            <span class="material-icons app-bar-icon" id="refresh-button">refresh</span>
+        </div>
+
+        <div class="content">
+            <div class="filter-section">
+                <div class="filter-title">Filter by Status</div>
+                <div class="filter-options">
+                    <div class="filter-option active" data-filter="all">All</div>
+                    <div class="filter-option" data-filter="pending">Pending</div>
+                    <div class="filter-option" data-filter="confirmed">Confirmed</div>
+                    <div class="filter-option" data-filter="shipped">Shipped</div>
+                    <div class="filter-option" data-filter="delivered">Delivered</div>
+                    <div class="filter-option" data-filter="cancelled">Cancelled</div>
+                </div>
+            </div>
+
+            <div id="bookings-container">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <a class="nav-item" id="home-nav" href="homepage.html">
+                <span class="material-icons nav-icon">home</span>
+                <span>Home</span>
+            </a>
+            <a class="nav-item" id="category-nav" href="categorypage.html">
+                <span class="material-icons nav-icon">category</span>
+                <span>Category</span>
+            </a>
+            <a class="nav-item" id="sell-nav" href="additem.html">
+                <span class="material-icons nav-icon">add_box</span>
+                <span>Sell</span>
+            </a>
+            <a class="nav-item" id="saved-nav" href="savedpage.html">
+                <span class="material-icons nav-icon">shopping_cart</span>
+                <span>Cart</span>
+            </a>
+            <a class="nav-item" id="profile-nav" href="profilepage.html">
+                <span class="material-icons nav-icon">person</span>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0",
+            authDomain: "quickpick-1523f.firebaseapp.com",
+            projectId: "quickpick-1523f",
+            storageBucket: "quickpick-1523f.appspot.com",
+            messagingSenderId: "814647987706",
+            appId: "1:814647987706:web:01595f83582fe3de0e2843",
+            measurementId: "G-MMK0VWMY8T"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        
+        // Initialize services
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        let currentUser = null;
+        let allBookings = [];
+        let currentFilter = 'all';
+        
+        // DOM elements
+        const bookingsContainer = document.getElementById('bookings-container');
+        const filterOptions = document.querySelectorAll('.filter-option');
+        
+        // Check authentication state
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadUserBookings(user.uid); 
+            } else {
+                // Redirect to login if not authenticated
+                alert("You must log in first!");
+                window.location.href = "loginpage.html";
+            }
+        });
+        
+        // Load user's bookings from Firestore
+        async function loadUserBookings(userId) {
+            console.log("Loading bookings for buyer ID:", userId);
+            try {
+                bookingsContainer.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
+                
+                // Query bookings where 'buyerId' matches the current user's ID
+                const bookingsQuery = query(
+                    collection(db, 'bookings'),
+                    where('buyerId', '==', userId), 
+                    orderBy('createdAt', 'desc')
+                );
+                
+                const querySnapshot = await getDocs(bookingsQuery);
+                
+                if (querySnapshot.empty) {
+                    bookingsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <span class="material-icons empty-icon">event_busy</span>
+                            <h3>No Orders Placed Yet</h3>
+                            <p>You haven't placed any bookings for products yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Store all bookings
+                allBookings = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const booking = doc.data();
+                    const bookingId = doc.id;
+                    allBookings.push({ ...booking, id: bookingId });
+                });
+                
+                console.log(`Successfully loaded ${allBookings.length} orders.`);
+                // Display bookings based on current filter
+                displayFilteredBookings();
+                
+            } catch (error) {
+                console.error("Firebase Error in loadUserBookings:", error);
+                bookingsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-icons empty-icon">error</span>
+                        <h3>Error Loading Bookings</h3>
+                        <p>There was a problem loading your orders. Please try again.</p>
+                        <button class="action-btn btn-primary" onclick="location.reload()" style="margin-top: 15px;">
+                            <span class="material-icons">refresh</span> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Get status message based on booking status
+        function getStatusMessage(status, bookingDate) {
+            const messages = {
+                'pending': {
+                    title: '🕒 Waiting for Seller Confirmation',
+                    message: 'Your order is pending confirmation from the seller. They will review your request and get back to you soon.'
+                },
+                'confirmed': {
+                    title: '✅ Order Confirmed',
+                    message: 'Great news! The seller has confirmed your order. They are now preparing your item for shipment.'
+                },
+                'shipped': {
+                    title: '🚚 Order Shipped',
+                    message: 'Your order has been shipped! The seller has sent out your package. You should receive it soon.'
+                },
+                'delivered': {
+                    title: '🎉 Order Delivered',
+                    message: 'Your order has been successfully delivered! We hope you enjoy your purchase. Thank you for shopping with us!'
+                },
+                'cancelled': {
+                    title: '❌ Order Cancelled',
+                    message: 'This order has been cancelled. If this was a mistake, please contact the seller directly.'
+                }
+            };
+            
+            return messages[status] || {
+                title: '📦 Order Status',
+                message: 'Your order is being processed. Please check back for updates.'
+            };
+        }
+        
+        // Display bookings based on current filter
+        function displayFilteredBookings() {
+            const filteredBookings = allBookings.filter(booking => {
+                if (currentFilter === 'all') return true;
+                return booking.status === currentFilter;
+            });
+            
+            if (filteredBookings.length === 0) {
+                bookingsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-icons empty-icon">search</span>
+                        <h3>No Bookings Found</h3>
+                        <p>No orders match your current filter.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let bookingsHTML = '<div class="bookings-list">';
+            
+            filteredBookings.forEach((booking) => {
+                // Format price
+                const formattedPrice = booking.productPrice ? `₹${booking.productPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Price not set';
+                
+                // Get status class and capitalize status for display
+                const statusDisplay = capitalizeFirstLetter(booking.status || 'pending');
+                const statusClass = `status-${booking.status || 'pending'}`;
+                
+                // Get status message
+                const statusMessage = getStatusMessage(booking.status, booking.createdAt);
+                
+                // Format date
+                const bookingDate = booking.createdAt && booking.createdAt.seconds ? new Date(booking.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+                
+                // Contact info
+                const contactName = booking.sellerName || 'Seller';
+                const contactEmail = booking.sellerEmail || 'No email available'; 
+                const contactPhone = booking.sellerPhone || 'No phone available';
+
+                // Create booking card
+                bookingsHTML += `
+                    <div class="booking-card" data-booking-id="${booking.id}">
+                        <div class="booking-header">
+                            <div class="booking-id">Order ID: ${booking.bookingId || 'N/A'}</div>
+                            <div class="booking-status ${statusClass}">${statusDisplay}</div>
+                        </div>
+                        
+                        <div class="booking-product">
+                            <img src="${booking.productImage || 'https://via.placeholder.com/300/1976D2/FFFFFF?text=No+Image'}" 
+                                alt="${booking.productTitle}" class="product-image">
+                            <div class="product-info">
+                                <div class="product-title">${booking.productTitle || 'Untitled Product'}</div>
+                                <div class="product-price">${formattedPrice}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="booking-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Order Date:</span>
+                                <span class="detail-value">${bookingDate}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Payment Method:</span>
+                                <span class="detail-value">${formatPaymentMethod(booking.paymentMethod)}</span>
+                            </div>
+                            
+                            <!-- Status Message Section -->
+                            <div class="status-message ${booking.status}">
+                                <strong>${statusMessage.title}</strong>
+                                <p style="margin-top: 5px; margin-bottom: 0;">${statusMessage.message}</p>
+                            </div>
+                            
+                            <div class="buyer-info">
+                                <div class="buyer-name">Ship To: ${booking.buyerName || 'N/A'}</div>
+                                <div class="buyer-contact">
+                                    📍 ${booking.deliveryAddress || 'No address provided'}
+                                </div>
+                                ${booking.message ? `
+                                    <div class="buyer-contact" style="margin-top: 5px; font-style: italic;">
+                                        💬 Your Note: "${booking.message}"
+                                    </div>
+                                ` : ''}
+                                <div class="detail-row" style="margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 5px;">
+                                    <span class="detail-label">Seller Contact:</span>
+                                    <span class="detail-value">
+                                        📞 ${contactPhone} | 📧 ${contactEmail}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="booking-actions">
+                            ${(booking.status === 'pending' || booking.status === 'confirmed') ? `
+                                <button class="action-btn btn-danger" onclick="updateBookingStatus('${booking.id}', 'cancelled')">
+                                    <span class="material-icons">close</span> Cancel Order
+                                </button>
+                            ` : ''}
+                            
+                            ${booking.status === 'shipped' ? `
+                                <button class="action-btn btn-success" onclick="updateBookingStatus('${booking.id}', 'delivered')">
+                                    <span class="material-icons">done_all</span> Confirm Receipt
+                                </button>
+                            ` : ''}
+                            
+                            <button class="action-btn btn-primary" onclick="contactSeller('${contactPhone}', '${contactEmail}')">
+                                <span class="material-icons">support_agent</span> Contact Seller
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            bookingsHTML += '</div>';
+            bookingsContainer.innerHTML = bookingsHTML;
+        }
+        
+        async function updateBookingStatus(bookingId, newStatus) {
+            try {
+                if (!confirm(`Are you sure you want to change the order status to "${newStatus.toUpperCase()}"?`)) {
+                    return;
+                }
+                
+                const bookingRef = doc(db, 'bookings', bookingId);
+                await updateDoc(bookingRef, {
+                    status: newStatus,
+                    updatedAt: new Date()
+                });
+                
+                // Update local data
+                const bookingIndex = allBookings.findIndex(b => b.id === bookingId);
+                if (bookingIndex !== -1) {
+                    allBookings[bookingIndex].status = newStatus;
+                    allBookings[bookingIndex].updatedAt = new Date();
+                }
+                
+                displayFilteredBookings();
+                
+                alert(`Order updated to ${newStatus} successfully!`);
+                
+            } catch (error) {
+                console.error("Error updating order status:", error);
+                alert("Error updating order status. Please check your permissions or try again.");
+            }
+        }
+        
+        function contactSeller(phone, email) {
+            let contactMethods = [];
+            
+            if (phone && phone !== 'No phone available') {
+                contactMethods.push(`📞 Call: ${phone}`);
+                contactMethods.push(`💬 WhatsApp: ${phone}`);
+            }
+            
+            if (email && email !== 'No email available') {
+                contactMethods.push(`📧 Email: ${email}`);
+            }
+            
+            if (contactMethods.length === 0) {
+                alert("No contact information available for the seller.");
+                return;
+            }
+            
+            const message = `Contact the seller using:\n\n${contactMethods.join('\n')}`;
+            alert(message);
+        }
+        
+        // Utility functions
+        function capitalizeFirstLetter(string) {
+            if (!string) return '';
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+        
+        function formatPaymentMethod(method) {
+            const methods = {
+                'cash_on_delivery': 'Cash on Delivery',
+                'upi': 'UPI Payment',
+                'card': 'Credit/Debit Card',
+                'net_banking': 'Net Banking'
+            };
+            return methods[method] || capitalizeFirstLetter(method) || 'Unknown';
+        }
+        
+        // Filter functionality
+        filterOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Update active filter
+                filterOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                currentFilter = this.dataset.filter;
+                displayFilteredBookings();
+            });
+        });
+        
+        // Back button functionality
+        document.getElementById('back-button').addEventListener('click', function() {
+            window.history.back();
+        });
+
+        // Refresh button functionality
+        document.getElementById('refresh-button').addEventListener('click', function() {
+            if (currentUser) {
+                loadUserBookings(currentUser.uid);
+            }
+        });
+
+        // Navigation functionality
+        document.getElementById('home-nav').addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            window.location.href = "homepage.html"; 
+        });
+        document.getElementById('category-nav').addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            window.location.href = "categorypage.html"; 
+        });
+        document.getElementById('sell-nav').addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            window.location.href = "additem.html"; 
+        });
+        document.getElementById('saved-nav').addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            window.location.href = "savedpage.html"; 
+        });
+        document.getElementById('profile-nav').addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            window.location.href = "profilepage.html"; 
+        });
+
+        // Make functions globally available
+        window.updateBookingStatus = updateBookingStatus;
+        window.contactSeller = contactSeller;
+    </script>
+</body>
+</html>

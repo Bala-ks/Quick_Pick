@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudinary URL Fetch & Upload Demo</title>
+    
+    <script 
+        src="https://upload-widget.cloudinary.com/latest/global/all.js" 
+        type="text/javascript">
+    </script> 
+    
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .upload-options { margin-bottom: 20px; }
+        
+        #upload-button, #fetch-button { 
+            padding: 10px 20px; 
+            font-size: 16px; 
+            background-color: #1976D2; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        #upload-button:hover, #fetch-button:hover { background-color: #1565C0; }
+        
+        #url-input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        #image-preview { 
+            max-width: 100%; 
+            height: auto; 
+            border: 1px dashed #ddd; 
+            margin-top: 20px; 
+            display: none; 
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Cloudinary Image Handling Demo</h2>
+        
+        <div class="upload-options">
+            <p><strong>Option 1: Direct File Upload (Fastest)</strong></p>
+            <button id="upload-button">Select & Upload Image</button>
+        </div>
+
+        <div class="upload-options">
+            <p><strong>Option 2: Fetch from URL</strong></p>
+            <input type="url" id="url-input" placeholder="Paste a public image URL here (e.g., https://i.imgur.com/image.jpg)">
+            <button id="fetch-button">Fetch & Process URL</button>
+        </div>
+
+        <hr>
+
+        <h3>Result:</h3>
+        <p><strong>Cloudinary URL Stored:</strong></p>
+        <p id="full-link-output" style="word-break: break-all; font-size: 12px; color: #555;">No URL yet.</p>
+        
+        <p><strong>Optimized Image Display (300px Wide):</strong></p>
+        <img id="image-preview" alt="Uploaded Image Preview">
+        <p id="timing-output" style="font-style: italic; margin-top: 10px;"></p>
+    </div>
+
+    <script>
+        // =================================================================
+        // CONFIGURATION (REPLACE THESE VALUES)
+        // =================================================================
+        const CLOUDINARY_CLOUD_NAME = "db0qv1cch"; 
+        const CLOUDINARY_UPLOAD_PRESET = "Quick_Pick"; 
+        
+        // =================================================================
+        // DOM ELEMENTS
+        // =================================================================
+        const uploadButton = document.getElementById('upload-button');
+        const fetchButton = document.getElementById('fetch-button');
+        const urlInput = document.getElementById('url-input');
+        const fullLinkOutput = document.getElementById('full-link-output');
+        const imagePreview = document.getElementById('image-preview');
+        const timingOutput = document.getElementById('timing-output');
+        
+        let uploadStartTime;
+
+        // Utility to reset UI status
+        function resetUI(message) {
+            fullLinkOutput.textContent = message || "Processing...";
+            imagePreview.style.display = 'none';
+            timingOutput.textContent = '';
+        }
+
+        // =================================================================
+        // UPLOAD & RETRIEVAL LOGIC
+        // =================================================================
+
+        function retrieveAndDisplayImage(fullLink, sourceText, duration) {
+            
+            resetUI();
+            const retrieveStartTime = performance.now();
+            
+            // OPTIMIZATION: Transform the image for fast preview loading
+            const transformedUrl = fullLink.replace(
+                "/upload/", 
+                "/upload/w_300,c_fill,q_auto,f_auto/" 
+            );
+
+            fullLinkOutput.textContent = fullLink;
+            imagePreview.src = transformedUrl;
+            imagePreview.style.display = 'block';
+            
+            imagePreview.onload = () => {
+                const retrieveEndTime = performance.now();
+                const retrieveTime = ((retrieveEndTime - retrieveStartTime) / 1000).toFixed(2);
+                
+                timingOutput.innerHTML = `
+                    ✅ **Source:** ${sourceText}<br>
+                    ✅ **Duration (${sourceText}):** ${duration} seconds.<br>
+                    ✅ **Retrieval Time (Optimized CDN):** ${retrieveTime} seconds.
+                `;
+            };
+            
+            imagePreview.onerror = () => {
+                timingOutput.textContent = "Error loading optimized image from CDN.";
+            };
+        }
+
+        // =================================================================
+        // OPTION 1: WIDGET UPLOAD (FILE)
+        // =================================================================
+        
+        const myWidget = cloudinary.createUploadWidget(
+            {
+                cloudName: CLOUDINARY_CLOUD_NAME,
+                uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+                multiple: false,
+            }, 
+            (error, result) => {
+                if (result && result.event === "success") {
+                    const full_url = result.info.secure_url;
+                    
+                    const uploadEndTime = performance.now();
+                    const uploadTime = ((uploadEndTime - uploadStartTime) / 1000).toFixed(2);
+                    
+                    // Display the newly hosted Cloudinary link
+                    retrieveAndDisplayImage(full_url, "File Upload", uploadTime);
+
+                } else if (error) {
+                    console.error("Cloudinary Upload Error:", error);
+                    alert("File upload failed.");
+                    resetUI("Upload failed.");
+                }
+            }
+        );
+
+        uploadButton.addEventListener("click", function() {
+            uploadStartTime = performance.now();
+            myWidget.open();
+            resetUI("Waiting for widget upload...");
+        });
+
+        // =================================================================
+        // OPTION 2: URL FETCH (PASTE LINK)
+        // =================================================================
+
+        fetchButton.addEventListener('click', async function() {
+            const externalUrl = urlInput.value.trim();
+            if (!externalUrl) {
+                alert("Please paste a valid image URL.");
+                return;
+            }
+            
+            resetUI("Fetching image from URL...");
+            const fetchStartTime = performance.now();
+
+            try {
+                // Cloudinary REST API Endpoint for Unsigned Upload (Fetch from URL)
+                const apiUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+                
+                const formData = new FormData();
+                formData.append("file", externalUrl); // Cloudinary uses "file" key for URL or File object
+                formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData,
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.secure_url) {
+                    const fetchEndTime = performance.now();
+                    const fetchTime = ((fetchEndTime - fetchStartTime) / 1000).toFixed(2);
+                    
+                    // Display the newly hosted Cloudinary link
+                    retrieveAndDisplayImage(data.secure_url, "URL Fetch", fetchTime);
+                } else {
+                    throw new Error("Invalid response from Cloudinary API.");
+                }
+
+            } catch (error) {
+                console.error("URL Fetch Error:", error);
+                alert("Could not fetch or process URL. Check console or URL validity.");
+                resetUI("URL Fetch failed.");
+            }
+        });
+
+    </script>
+</body>
+</html>
