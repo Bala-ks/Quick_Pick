@@ -254,6 +254,7 @@
                     <option value="60" selected>60 km</option>
                     <option value="100">100 km</option>
                     <option value="200">200 km</option>
+                    <option value="unlimited">Unlimited</option> 
                 </select>
             </div>
             
@@ -319,7 +320,8 @@
         const productsListContainer = document.getElementById('products-list-container');
 
         let userLocation = null;
-        let currentRadius = 60; // Default radius in km
+        // CHANGED: Initial radius to string '60' to match select option value type
+        let currentRadius = '60'; 
 
         // =========================================================================
         // Geo-Filtering Logic
@@ -368,11 +370,18 @@
         }
 
         // Fetch products from Firebase and filter by distance
-        async function fetchNearbyProducts(location, radius) {
+        async function fetchNearbyProducts(location, radiusValue) {
             productsListContainer.innerHTML = '';
             loadingContainer.style.display = 'flex';
+            
+            // CONVERT RADIUS TO NUMBER, 'unlimited' will become NaN
+            const radius = parseFloat(radiusValue); 
+            const isUnlimited = radiusValue === 'unlimited' || isNaN(radius); 
 
             try {
+                // IMPORTANT: Since Firestore cannot perform geo-queries, we fetch ALL products 
+                // and then filter them client-side using the Haversine formula.
+                // For a large number of products, this will be slow and costly.
                 const productsCollection = await db.collection('products').get();
                 const productsList = [];
                 
@@ -380,33 +389,41 @@
                     const productData = doc.data();
                     const productCoords = extractCoordinates(productData); 
                     
-                    // Only process products that are 'available' and have valid coordinates
-                    if (productData.status === 'available' && productCoords) {
-                        
-                        const distance = getDistance(
+                    // Always filter by status first
+                    if (productData.status !== 'available') {
+                        return; // Skip if not available
+                    }
+
+                    let distance = null;
+
+                    // Only proceed with distance calculation if radius is NOT unlimited AND we have coordinates
+                    if (!isUnlimited && productCoords) {
+                        distance = getDistance(
                             location.lat,
                             location.lng,
                             productCoords.lat,
                             productCoords.lng
                         );
-
-                        // Filter products: distance MUST be LESS THAN OR EQUAL TO the selected radius
-                        if (distance <= radius) {
-                            productsList.push({
-                                id: doc.id,
-                                ...productData,
-                                distance: distance.toFixed(1) // Round to one decimal place
-                            });
-                        }
                     }
+                    
+                    // --- DISTANCE CHECK LOGIC ---
+                    if (isUnlimited || distance <= radius) {
+                        productsList.push({
+                            id: doc.id,
+                            ...productData,
+                            // If distance is calculated, use it. Otherwise, set a descriptive string.
+                            distance: distance !== null ? distance.toFixed(1) : 'Not Applicable' 
+                        });
+                    }
+                    // --- END DISTANCE CHECK LOGIC ---
                 });
 
                 loadingContainer.style.display = 'none';
 
                 if (productsList.length === 0) {
-                    showNoProductsFound(radius);
+                    showNoProductsFound(isUnlimited ? 'area' : `${radius} km`);
                 } else {
-                    displayProducts(productsList, radius);
+                    displayProducts(productsList, radiusValue); // Pass the original value to display logic
                 }
 
             } catch (error) {
@@ -417,7 +434,7 @@
         }
 
         // =========================================================================
-        // UI Rendering Functions (MODIFIED)
+        // UI Rendering Functions (MODIFIED for Unlimited)
         // =========================================================================
 
         // Helper function for price formatting (e.g., 5600.00 -> 5,600.00)
@@ -427,7 +444,9 @@
         }
 
         // Display products
-        function displayProducts(products, radius) {
+        function displayProducts(products, radiusValue) {
+            const isUnlimited = radiusValue === 'unlimited';
+
             productsListContainer.innerHTML = `
                 <div id="products-list"></div>
             `;
@@ -439,13 +458,22 @@
                 productCard.className = 'product-card';
                 productCard.href = `productdetail.html?id=${product.id}`; 
                 
-                // Use a default image if none is available
                 const imageUrl = product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/120x120?text=QuickPick';
 
-                // Ensure location_text is capitalized for better display
                 const locationText = product.location_text || '';
                 const displayCategory = product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1) : 'General';
                 
+                // Determine the distance/location display text
+                let distanceDisplay = '';
+                if (isUnlimited) {
+                    distanceDisplay = locationText || 'Location Not Specified';
+                } else {
+                    // Use the pre-calculated/stored distance if available, otherwise location text
+                    distanceDisplay = product.distance && product.distance !== 'Not Applicable' 
+                                      ? product.distance + ' km away' 
+                                      : locationText || 'Location Not Specified';
+                }
+
                 // The structure is now: Image | Name, Location, Price, Category/Distance
                 productCard.innerHTML = `
                     <img src="${imageUrl}" alt="${product.title}" class="product-image">
@@ -456,7 +484,7 @@
                             <div class="product-location-line">
                                 <span class="location-text">
                                     <span class="material-icons location-icon">location_on</span>
-                                    ${locationText || product.distance + ' km away'}
+                                    ${distanceDisplay}
                                 </span>
                                 <span class="category-text">
                                     ${displayCategory}
@@ -471,12 +499,12 @@
             });
         }
 
-        function showNoProductsFound(radius) {
+        function showNoProductsFound(radiusText) {
             productsListContainer.innerHTML = `
                 <div class="error-container">
                     <span class="material-icons" style="font-size: 48px; color: #666; margin-bottom: 16px;">sentiment_dissatisfied</span>
-                    <p>No available products found within your **${radius} km** radius.</p>
-                    <p>Try increasing the radius using the filter above!</p>
+                    <p>No available products found within your **${radiusText}**.</p>
+                    <p>Try changing the radius using the filter above!</p>
                 </div>
             `;
         }
@@ -518,6 +546,22 @@
         // =========================================================================
 
         function initApp() {
+            // Get the initial radius from the select box's selected value
+            currentRadius = radiusSelect.value; 
+
+            if (currentRadius === 'unlimited') {
+                // If 'Unlimited' is selected, we don't strictly need the user's location
+                // to fetch products, but we will still try to get it to calculate distances 
+                // for the limited radii later, or if the user switches.
+                getGeolocationAndFetch();
+            } else {
+                // If a distance is selected, location is mandatory
+                getGeolocationAndFetch();
+            }
+        }
+        
+        // New helper function to encapsulate location fetching
+        function getGeolocationAndFetch() {
             if (navigator.geolocation) {
                 productsListContainer.innerHTML = '';
                 loadingContainer.style.display = 'flex';
@@ -531,8 +575,16 @@
                         fetchNearbyProducts(userLocation, currentRadius);
                     },
                     error => {
-                        loadingContainer.style.display = 'none';
-                        showLocationError();
+                        // If location fails, and we are NOT on 'unlimited', show error.
+                        // If we are on 'unlimited', we can still fetch all items (though distance calc will be N/A)
+                        if (currentRadius === 'unlimited') {
+                            // Use dummy location for 'unlimited' fetch if user location is unavailable
+                            userLocation = { lat: 0, lng: 0 }; 
+                            fetchNearbyProducts(userLocation, currentRadius);
+                        } else {
+                            loadingContainer.style.display = 'none';
+                            showLocationError();
+                        }
                     },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
                 );
@@ -543,17 +595,17 @@
         }
 
         radiusSelect.addEventListener('change', function() {
-            const newRadius = parseInt(this.value);
-            currentRadius = newRadius;
+            currentRadius = this.value;
             
             if (userLocation) {
                 fetchNearbyProducts(userLocation, currentRadius);
             } else {
-                initApp();
+                // If location wasn't acquired initially, try again or handle 'unlimited'
+                getGeolocationAndFetch(); 
             }
         });
 
-        // Navigation handlers
+        // Navigation handlers (unchanged)
         document.getElementById('category-nav').addEventListener('click', (e) => { e.preventDefault(); window.location.href = "categorypage.html"; });
         document.getElementById('home-nav').addEventListener('click', (e) => { e.preventDefault(); window.location.href = "homepage.html"; });
         document.getElementById('saved-nav').addEventListener('click', (e) => { e.preventDefault(); window.location.href = "savedpage.html"; });
