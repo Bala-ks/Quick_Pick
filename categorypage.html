@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -148,6 +153,73 @@
             color: #00bcd4;
         }
         
+        /* Loading and Error States */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2196f3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-container {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin: 20px 0;
+        }
+        
+        .error-icon {
+            font-size: 64px;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        
+        .error-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .error-message {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+        
+        .retry-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .retry-button:hover {
+            background: #2980b9;
+        }
+        
         /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
@@ -232,152 +304,25 @@
     </div>
     
     <div class="container">
-        <!-- Electronics Section -->
-        <h2 class="section-title"><i class="fas fa-laptop"></i> Electronics & Gadgets</h2>
-        <div class="category-grid">
-            <div class="category-card">
-                <div class="category-icon electronics">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <div class="category-name electronics">Smartphones</div>
-                <div class="category-desc">Latest models & accessories</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon electronics">
-                    <i class="fas fa-laptop"></i>
-                </div>
-                <div class="category-name electronics">Laptops</div>
-                <div class="category-desc">Ultrabooks, Gaming, Business</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon electronics">
-                    <i class="fas fa-headphones"></i>
-                </div>
-                <div class="category-name electronics">Audio Devices</div>
-                <div class="category-desc">Headphones, Earbuds, Speakers</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon electronics">
-                    <i class="fas fa-tv"></i>
-                </div>
-                <div class="category-name electronics">TV & Home Theater</div>
-                <div class="category-desc">Smart TVs, Soundbars, Projectors</div>
-            </div>
+        <!-- Loading State -->
+        <div class="loading-container" id="loadingState">
+            <div class="spinner"></div>
+            <p>Loading categories...</p>
         </div>
-        
-        <!-- Fashion Section -->
-        <h2 class="section-title"><i class="fas fa-tshirt"></i> Fashion & Clothing</h2>
-        <div class="category-grid">
-            <div class="category-card">
-                <div class="category-icon fashion">
-                    <i class="fas fa-tshirt"></i>
-                </div>
-                <div class="category-name fashion">Men's Fashion</div>
-                <div class="category-desc">Clothing, Shoes, Accessories</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon fashion">
-                    <i class="fas fa-female"></i>
-                </div>
-                <div class="category-name fashion">Women's Fashion</div>
-                <div class="category-desc">Clothing, Shoes, Bags</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon fashion">
-                    <i class="fas fa-gem"></i>
-                </div>
-                <div class="category-name fashion">Jewelry & Watches</div>
-                <div class="category-desc">Fine jewelry & luxury watches</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon fashion">
-                    <i class="fas fa-glasses"></i>
-                </div>
-                <div class="category-name fashion">Accessories</div>
-                <div class="category-desc">Sunglasses, Belts, Wallets</div>
-            </div>
+
+        <!-- Error State -->
+        <div class="error-container" id="errorState" style="display: none;">
+            <div class="error-icon">⚠️</div>
+            <h2 class="error-title">Unable to Load Categories</h2>
+            <p class="error-message" id="errorMessage">Failed to load categories. Please check your connection and try again.</p>
+            <button class="retry-button" id="retryButton">Try Again</button>
         </div>
-        
-        <!-- Home & Kitchen Section -->
-        <h2 class="section-title"><i class="fas fa-home"></i> Home & Kitchen</h2>
-        <div class="category-grid">
-            <div class="category-card">
-                <div class="category-icon home">
-                    <i class="fas fa-couch"></i>
-                </div>
-                <div class="category-name home">Furniture</div>
-                <div class="category-desc">Sofas, Beds, Dining Sets</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon home">
-                    <i class="fas fa-blender"></i>
-                </div>
-                <div class="category-name home">Kitchen Appliances</div>
-                <div class="category-desc">Mixers, Cookware, Utensils</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon home">
-                    <i class="fas fa-fan"></i>
-                </div>
-                <div class="category-name home">Home Appliances</div>
-                <div class="category-desc">ACs, Washing Machines, Refrigerators</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon home">
-                    <i class="fas fa-paint-roller"></i>
-                </div>
-                <div class="category-name home">Home Decor</div>
-                <div class="category-desc">Wall Art, Lamps, Clocks</div>
-            </div>
-        </div>
-        
-        <!-- Beauty & Health Section -->
-        <h2 class="section-title"><i class="fas fa-spa"></i> Beauty & Health</h2>
-        <div class="category-grid">
-            <div class="category-card">
-                <div class="category-icon beauty">
-                    <i class="fas fa-palette"></i>
-                </div>
-                <div class="category-name beauty">Makeup</div>
-                <div class="category-desc">Cosmetics & Beauty Products</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon beauty">
-                    <i class="fas fa-soap"></i>
-                </div>
-                <div class="category-name beauty">Skincare</div>
-                <div class="category-desc">Face & Body Care</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon health">
-                    <i class="fas fa-first-aid"></i>
-                </div>
-                <div class="category-name health">Health Supplements</div>
-                <div class="category-desc">Vitamins & Nutrition</div>
-            </div>
-            
-            <div class="category-card">
-                <div class="category-icon health">
-                    <i class="fas fa-weight"></i>
-                </div>
-                <div class="category-name health">Fitness Equipment</div>
-                <div class="category-desc">Home Gym & Fitness Gear</div>
-            </div>
-        </div>
+
+        <!-- Categories will be dynamically inserted here -->
+        <div id="categoriesContainer"></div>
     </div>
     
-    <!-- Bottom Navigation (replaces previous footer) -->
+    <!-- Bottom Navigation -->
     <div class="bottom-nav">
         <a class="nav-item" id="home-nav">
             <span class="material-icons nav-icon">home</span>
@@ -398,6 +343,180 @@
     </div>
     
     <script>
+        // =========================================================================
+        // Firebase Configuration & Initialization
+        // =========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0",
+            authDomain: "quickpick-1523f.firebaseapp.com",
+            projectId: "quickpick-1523f",
+            storageBucket: "quickpick-1523f.appspot.com",
+            messagingSenderId: "814647987706",
+            appId: "1:814647987706:web:01595f83582fe3de0e2843",
+            measurementId: "G-MMK0VWMY8T"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // =========================================================================
+        // DOM Elements
+        // =========================================================================
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+        const retryButton = document.getElementById('retryButton');
+        const categoriesContainer = document.getElementById('categoriesContainer');
+
+        // =========================================================================
+        // UI State Management
+        // =========================================================================
+        function showLoading() {
+            loadingState.style.display = 'flex';
+            errorState.style.display = 'none';
+            categoriesContainer.innerHTML = '';
+        }
+
+        function showError(message) {
+            loadingState.style.display = 'none';
+            errorState.style.display = 'block';
+            categoriesContainer.innerHTML = '';
+            errorMessage.textContent = message;
+        }
+
+        function showCategories(categoriesBySection) {
+            loadingState.style.display = 'none';
+            errorState.style.display = 'none';
+            
+            // Clear container
+            categoriesContainer.innerHTML = '';
+            
+            // Create HTML for each section
+            for (const [sectionName, categories] of Object.entries(categoriesBySection)) {
+                if (categories.length === 0) continue;
+                
+                const sectionHTML = `
+                    <h2 class="section-title">
+                        <i class="fas ${getSectionIcon(sectionName)}"></i> ${sectionName}
+                    </h2>
+                    <div class="category-grid">
+                        ${categories.map(category => `
+                            <div class="category-card" data-category-id="${category.id}">
+                                <div class="category-icon ${getCategoryColorClass(category.color)}">
+                                    <i class="fas ${category.icon || 'fa-cube'}"></i>
+                                </div>
+                                <div class="category-name ${getCategoryColorClass(category.color)}">
+                                    ${category.name}
+                                </div>
+                                <div class="category-desc">
+                                    ${category.description || `${category.count || 0} products`}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                categoriesContainer.innerHTML += sectionHTML;
+            }
+            
+            // Add click event listeners to all category cards
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const categoryId = this.getAttribute('data-category-id');
+                    const categoryName = this.querySelector('.category-name').textContent;
+                    navigateToCategory(categoryId, categoryName);
+                });
+            });
+        }
+
+        // =========================================================================
+        // Firebase Data Fetching
+        // =========================================================================
+        async function fetchCategories() {
+            showLoading();
+            
+            try {
+                // Fetch categories from Firestore
+                const categoriesSnapshot = await db.collection('categories').get();
+                
+                if (categoriesSnapshot.empty) {
+                    showError('No categories found in the database.');
+                    return;
+                }
+                
+                // Organize categories by section
+                const categoriesBySection = {};
+                
+                categoriesSnapshot.forEach(doc => {
+                    const categoryData = doc.data();
+                    const category = {
+                        id: doc.id,
+                        ...categoryData
+                    };
+                    
+                    // Use section from Firestore or default to "All Categories"
+                    const section = category.section || 'All Categories';
+                    
+                    if (!categoriesBySection[section]) {
+                        categoriesBySection[section] = [];
+                    }
+                    
+                    categoriesBySection[section].push(category);
+                });
+                
+                showCategories(categoriesBySection);
+                
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                showError('Failed to load categories from Firebase. Please check your connection and try again.');
+            }
+        }
+
+        // =========================================================================
+        // Helper Functions
+        // =========================================================================
+        function getSectionIcon(sectionName) {
+            const iconMap = {
+                'Electronics': 'fa-laptop',
+                'Fashion': 'fa-tshirt',
+                'Home & Kitchen': 'fa-home',
+                'Beauty & Health': 'fa-spa',
+                'Sports': 'fa-running',
+                'Books': 'fa-book',
+                'Food': 'fa-utensils',
+                'Automotive': 'fa-car',
+                'All Categories': 'fa-th-large'
+            };
+            
+            return iconMap[sectionName] || 'fa-cube';
+        }
+
+        function getCategoryColorClass(color) {
+            const colorMap = {
+                'blue': 'electronics',
+                'pink': 'fashion',
+                'orange': 'home',
+                'purple': 'beauty',
+                'green': 'sports',
+                'brown': 'books',
+                'red': 'food',
+                'cyan': 'health'
+            };
+            
+            return colorMap[color] || 'electronics';
+        }
+
+        function navigateToCategory(categoryId, categoryName) {
+            // Navigate to products by category page with category ID and name as URL parameters
+            window.location.href = `productsbycategorypage.html?categoryId=${encodeURIComponent(categoryId)}&categoryName=${encodeURIComponent(categoryName)}`;
+        }
+
+        // =========================================================================
+        // Event Listeners
+        // =========================================================================
+        retryButton.addEventListener('click', fetchCategories);
+
         // Back button functionality
         document.getElementById('back-btn').onclick = function() {
             window.location.href = "homepage.html";
@@ -420,15 +539,11 @@
             window.location.href = "profilepage.html";
         });
 
-        // Add click event to all category cards
-        document.querySelectorAll('.category-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const categoryName = this.querySelector('.category-name').textContent;
-                alert(`Navigating to ${categoryName} category`);
-                // In a real app, you would navigate to the category page
-                // window.location.href = `category.html?name=${encodeURIComponent(categoryName)}`;
-            });
-        });
+        // =========================================================================
+        // Initialize Application
+        // =========================================================================
+        // Start fetching categories when the page loads
+        document.addEventListener('DOMContentLoaded', fetchCategories);
     </script>
 </body>
 </html>

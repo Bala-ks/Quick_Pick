@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - QuickPick Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(to bottom, #1976D2, #1565C0);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            margin-left: 10px;
+        }
+        
+        .logo i {
+            font-size: 28px;
+        }
+        
+        .nav-links {
+            margin-top: 30px;
+        }
+        
+        .nav-links li {
+            list-style: none;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: white;
+        }
+        
+        .nav-links li:hover, .nav-links li.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-links li i {
+            margin-right: 15px;
+            font-size: 20px; /* Slightly larger icons */
+        }
+
+        /* Remove the previous anchor tag styling */
+        .nav-links a {
+            display: none;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h2 {
+            color: #1976D2;
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .product-image-container {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .product-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-details {
+            padding: 15px;
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .product-price {
+            font-size: 20px;
+            color: #1976D2;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .product-actions {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-approved {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            align-items: center;
+        }
+
+        .filters select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-width: 150px;
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 35px 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .tables-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .nav-links {
+                display: flex;
+                overflow-x: auto;
+            }
+            
+            .nav-links li {
+                border-left: none;
+                border-bottom: 4px solid transparent;
+            }
+            
+            .nav-links li:hover, .nav-links li.active {
+                border-left: none;
+                border-bottom: 4px solid white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <i class="material-icons">bolt</i>
+                <h1>QuickPick</h1>
+            </div>
+            <ul class="nav-links">
+                <li data-page="adminpage.html"><i class="material-icons">dashboard</i> Dashboard</li>
+                <li data-page="adminuserview.html"><i class="material-icons">people</i> Users</li>
+                <li data-page="adminproductview.html" class="active"><i class="material-icons">inventory_2</i> Products</li>
+                <li data-page="admincomplaintsview.html"><i class="material-icons">warning</i> Complaints</li>
+                <li style="cursor: not-allowed; opacity: 0.6;" title="Coming Soon"><i class="material-icons">analytics</i> Analytics (Coming Soon)</li>
+                <li style="cursor: not-allowed; opacity: 0.6;" title="Coming Soon"><i class="material-icons">settings</i> Settings (Coming Soon)</li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h2>Product Management</h2>
+                <div class="user-info">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=1976D2&color=fff" alt="Admin">
+                    <span>Admin User</span>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search products...">
+                    <i class="material-icons">search</i>
+                </div>
+                <select id="categoryFilter">
+                    <option value="all">All Categories</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="books">Books</option>
+                </select>
+                <select id="statusFilter">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="product-grid" id="productGrid">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0",
+            authDomain: "quickpick-1523f.firebaseapp.com",
+            projectId: "quickpick-1523f",
+            storageBucket: "quickpick-1523f.appspot.com",
+            messagingSenderId: "814647987706",
+            appId: "1:814647987706:web:01595f83582fe3de0e2843",
+            measurementId: "G-MMK0VWMY8T"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Load and display products
+        async function loadProducts() {
+            const productGrid = document.getElementById('productGrid');
+            productGrid.innerHTML = '<div class="loading">Loading products...</div>';
+
+            try {
+                const snapshot = await db.collection('products').get();
+                let productsHTML = '';
+
+                snapshot.forEach(doc => {
+                    const product = doc.data();
+                    const imageUrl = product.images && product.images.length > 0 
+                        ? product.images[0] 
+                        : 'https://via.placeholder.com/300x200?text=No+Image';
+
+                    productsHTML += `
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                <img src="${imageUrl}" alt="${product.title}">
+                            </div>
+                            <div class="product-details">
+                                <div class="product-title">${product.title || 'Unnamed Product'}</div>
+                                <div class="product-price">₹${parseFloat(product.price || 0).toLocaleString('en-IN')}</div>
+                                <div class="product-info">Category: ${product.category || 'Uncategorized'}</div>
+                                <div class="product-info">Stock: ${product.stock || 0} units</div>
+                                <div class="product-info">Seller: ${product.sellerName || 'Unknown Seller'}</div>
+                                <div class="product-info">Added: ${product.createdAt ? new Date(product.createdAt.toDate()).toLocaleDateString() : 'Unknown'}</div>
+                            </div>
+                            <div class="product-actions">
+                                <span class="status-badge status-${product.status || 'pending'}">${product.status || 'pending'}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                productGrid.innerHTML = productsHTML || '<div class="loading">No products found</div>';
+
+            } catch (error) {
+                console.error('Error loading products:', error);
+                productGrid.innerHTML = '<div class="loading">Error loading products</div>';
+            }
+        }
+
+        // Filter products
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const productCards = document.querySelectorAll('.product-card');
+            
+            productCards.forEach(card => {
+                const title = card.querySelector('.product-title').textContent.toLowerCase();
+                const category = card.querySelector('.product-info').textContent.toLowerCase();
+                const status = card.querySelector('.status-badge').textContent.toLowerCase();
+
+                const matchesSearch = title.includes(searchTerm);
+                const matchesCategory = categoryFilter === 'all' || category.includes(categoryFilter);
+                const matchesStatus = statusFilter === 'all' || status === statusFilter;
+
+                card.style.display = (matchesSearch && matchesCategory && matchesStatus) ? 'block' : 'none';
+            });
+        }
+
+        // Add event listeners for filters
+        document.getElementById('searchInput').addEventListener('input', filterProducts);
+        document.getElementById('categoryFilter').addEventListener('change', filterProducts);
+        document.getElementById('statusFilter').addEventListener('change', filterProducts);
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            
+            // Setup navigation
+            const navItems = document.querySelectorAll('.nav-links li');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (this.textContent.includes('Coming Soon')) {
+                        alert('This feature is coming soon!');
+                        return;
+                    }
+                    
+                    const targetPage = this.getAttribute('data-page');
+                    if (targetPage) {
+                        window.location.href = targetPage;
+                    }
+                });
+            });
+
+            // Mark current page as active
+            const currentPage = window.location.pathname.split('/').pop() || 'adminproductview.html';
+            navItems.forEach(item => {
+                const itemPage = item.getAttribute('data-page');
+                if (itemPage === currentPage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

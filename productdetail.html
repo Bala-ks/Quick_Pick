@@ -219,7 +219,7 @@
             gap: 5px;
         }
 
-        /* Modal Styles (Unmodified) */
+        /* Modal Styles */
         .modal {
             display: none; 
             position: fixed;
@@ -278,7 +278,7 @@
             color: #ccc;
         }
         
-        /* Booking Modal Styles (Unmodified) */
+        /* Booking Modal Styles */
         .booking-modal {
             display: none;
             position: fixed;
@@ -396,6 +396,69 @@
             margin-bottom: 15px;
             color: #4CAF50;
         }
+
+        /* Complaint Modal Styles */
+        .complaint-modal {
+            display: none;
+            position: fixed;
+            z-index: 200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .complaint-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .complaint-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #E3F2FD;
+        }
+        .complaint-header h2 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        .complaint-type {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .complaint-option {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .complaint-option:hover {
+            border-color: #1976D2;
+            background-color: #f0f8ff;
+        }
+        .complaint-option.selected {
+            border-color: #1976D2;
+            background-color: #1976D2;
+            color: white;
+        }
+        .complaint-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
     </style>
 </head>
 <body>
@@ -403,7 +466,7 @@
         <div class="app-bar">
             <span class="material-icons app-bar-icon" id="back-button">arrow_back</span>
             <span class="app-title">Details</span>
-            <span class="material-icons app-bar-icon" id="share-button">share</span>
+            <span class="material-icons app-bar-icon" id="complaint-button" style="display: none;">report</span>
         </div>
 
         <div class="content" id="product-content">
@@ -417,6 +480,7 @@
             </div>
     </div>
 
+    <!-- Seller Modal -->
     <div id="sellerModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -426,6 +490,7 @@
         </div>
     </div>
 
+    <!-- Booking Modal -->
     <div id="bookingModal" class="booking-modal">
         <div class="booking-content">
             <div class="booking-header">
@@ -434,6 +499,19 @@
             </div>
             
             <div id="booking-form-container">
+                </div>
+        </div>
+    </div>
+
+    <!-- Complaint Modal -->
+    <div id="complaintModal" class="complaint-modal">
+        <div class="complaint-content">
+            <div class="complaint-header">
+                <h2>Report a Problem</h2>
+                <p>Help us improve by reporting issues</p>
+            </div>
+            
+            <div id="complaint-form-container">
                 </div>
         </div>
     </div>
@@ -480,6 +558,9 @@
         const sellerInfoContent = document.getElementById('seller-info-content');
         const bookingModal = document.getElementById('bookingModal');
         const bookingFormContainer = document.getElementById('booking-form-container');
+        const complaintModal = document.getElementById('complaintModal');
+        const complaintFormContainer = document.getElementById('complaint-form-container');
+        const complaintButton = document.getElementById('complaint-button');
         const pageTitle = document.getElementById('page-title');
 
 
@@ -512,8 +593,12 @@
             return 'BK' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
         }
 
+        function generateComplaintId() {
+            return 'COMP' + Date.now() + Math.random().toString(36).substr(2, 9).toUpperCase();
+        }
+
         // =========================================================================
-        // CART FUNCTIONALITY (NEW)
+        // CART FUNCTIONALITY
         // =========================================================================
 
         async function addToCart() {
@@ -552,6 +637,162 @@
             }
         }
 
+        // =========================================================================
+        // COMPLAINT FUNCTIONALITY
+        // =========================================================================
+
+        function openComplaintModal() {
+            if (!currentUser) {
+                alert("Please log in to report a complaint.");
+                return;
+            }
+
+            complaintFormContainer.innerHTML = `
+                <form id="complaint-form">
+                    <div class="form-group">
+                        <label class="form-label">Complaint Type *</label>
+                        <div class="complaint-type">
+                            <div class="complaint-option" data-type="fake_product" onclick="selectComplaintType(this)">
+                                <span class="material-icons">warning</span>
+                                <div>Fake Product</div>
+                            </div>
+                            <div class="complaint-option" data-type="inappropriate_content" onclick="selectComplaintType(this)">
+                                <span class="material-icons">block</span>
+                                <div>Inappropriate</div>
+                            </div>
+                            <div class="complaint-option" data-type="wrong_category" onclick="selectComplaintType(this)">
+                                <span class="material-icons">category</span>
+                                <div>Wrong Category</div>
+                            </div>
+                            <div class="complaint-option" data-type="spam" onclick="selectComplaintType(this)">
+                                <span class="material-icons">report</span>
+                                <div>Spam</div>
+                            </div>
+                            <div class="complaint-option" data-type="harassment" onclick="selectComplaintType(this)">
+                                <span class="material-icons">security</span>
+                                <div>Harassment</div>
+                            </div>
+                            <div class="complaint-option" data-type="other" onclick="selectComplaintType(this)">
+                                <span class="material-icons">help</span>
+                                <div>Other</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="complaint-type" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="complaint-details">Details *</label>
+                        <textarea id="complaint-details" class="form-textarea" 
+                                  placeholder="Please provide detailed information about the issue..." 
+                                  required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="complaint-evidence">Evidence (Optional)</label>
+                        <textarea id="complaint-evidence" class="form-textarea" 
+                                  placeholder="Any screenshots, links, or additional evidence..."></textarea>
+                    </div>
+
+                    <div class="complaint-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-complaint">
+                            <span class="material-icons">close</span> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-icons">send</span> Submit Report
+                        </button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('complaint-form').addEventListener('submit', handleComplaintSubmission);
+            document.getElementById('cancel-complaint').addEventListener('click', () => {
+                complaintModal.style.display = "none";
+            });
+
+            complaintModal.style.display = "flex";
+        }
+
+        function selectComplaintType(element) {
+            // Remove selected class from all options
+            document.querySelectorAll('.complaint-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            
+            // Set the hidden input value
+            document.getElementById('complaint-type').value = element.getAttribute('data-type');
+        }
+
+        async function handleComplaintSubmission(e) {
+            e.preventDefault();
+
+            try {
+                const complaintType = document.getElementById('complaint-type').value;
+                const complaintDetails = document.getElementById('complaint-details').value;
+                const complaintEvidence = document.getElementById('complaint-evidence').value;
+
+                if (!complaintType) {
+                    alert("Please select a complaint type.");
+                    return;
+                }
+
+                if (!complaintDetails.trim()) {
+                    alert("Please provide details about the complaint.");
+                    return;
+                }
+
+                const complaintData = {
+                    complaintId: generateComplaintId(),
+                    productId: productData.id,
+                    productTitle: productData.title,
+                    productPrice: productData.price,
+                    productImage: productImages[0] || '',
+                    sellerId: productData.userId,
+                    sellerName: productData.seller?.name || 'Unknown Seller',
+                    complainantId: currentUser.uid,
+                    complainantName: currentUser.displayName || 'Anonymous User',
+                    complainantEmail: currentUser.email || 'No email',
+                    complaintType: complaintType,
+                    complaintDetails: complaintDetails,
+                    complaintEvidence: complaintEvidence,
+                    status: 'pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                await db.collection('complaints').doc(complaintData.complaintId).set(complaintData);
+                showComplaintSuccess();
+
+            } catch (error) {
+                console.error("Error submitting complaint:", error);
+                alert("Error submitting complaint. Please try again.");
+            }
+        }
+
+        function showComplaintSuccess() {
+            complaintFormContainer.innerHTML = `
+                <div class="success-message">
+                    <span class="material-icons">check_circle</span>
+                    <h3>Complaint Submitted!</h3>
+                    <p>Your complaint has been successfully reported.</p>
+                    <p>Our team will review it and take appropriate action.</p>
+                    <p style="color: #666; font-size: 14px; margin-top: 10px;">
+                        Thank you for helping us maintain a safe marketplace.
+                    </p>
+                    <div class="complaint-actions" style="margin-top: 25px;">
+                        <button class="btn btn-primary" id="close-complaint-success">
+                            <span class="material-icons">done</span> Close
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('close-complaint-success').addEventListener('click', () => {
+                complaintModal.style.display = "none";
+            });
+        }
 
         // =========================================================================
         // Core Data Fetching and Display
@@ -614,6 +855,13 @@
                     if (user && productData) {
                         currentUser = user;
                         isOwner = (user.uid === productData.userId);
+                        
+                        // Show/hide complaint button based on ownership
+                        if (!isOwner) {
+                            complaintButton.style.display = 'block';
+                        } else {
+                            complaintButton.style.display = 'none';
+                        }
                     }
                     resolve();
                 });
@@ -793,7 +1041,7 @@
         }
 
         // =========================================================================
-        // Booking Functionality (Unmodified)
+        // Booking Functionality
         // =========================================================================
 
         function openBookingModal() {
@@ -947,18 +1195,6 @@
         }
 
         // =========================================================================
-        // Edit Mode Functions (Omitted for brevity, assumed functional)
-        // =========================================================================
-
-        // Placeholder for edit mode functions
-        function enableEditMode() { console.log('Edit mode enabled'); isEditing = true; displayProductDetails(); setupActionButtons(); }
-        function cancelEdit() { isEditing = false; displayProductDetails(); setupActionButtons(); }
-        async function saveChanges() { /* ... save logic ... */ }
-        function openCloudinaryWidget() { alert("Cloudinary widget open"); }
-        function removeImage(index) { console.log(`Remove image at ${index}`); }
-        
-
-        // =========================================================================
         // Error and Initialization
         // =========================================================================
 
@@ -981,17 +1217,7 @@
 
             // Set up static button actions
             document.getElementById('back-button').onclick = () => window.history.back();
-            document.getElementById('share-button').onclick = () => {
-                if (navigator.share) {
-                    navigator.share({
-                        title: productData ? productData.title : 'QuickDeals Product',
-                        text: `Check out this great deal on QuickDeals: ${productData ? productData.title : ''}`,
-                        url: window.location.href,
-                    }).catch(console.error);
-                } else {
-                    alert("Sharing not supported in this browser. Please copy the URL manually.");
-                }
-            };
+            document.getElementById('complaint-button').onclick = openComplaintModal;
             
             if (productId) {
                 fetchProduct(productId);

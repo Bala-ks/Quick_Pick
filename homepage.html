@@ -165,7 +165,6 @@
         }
         /* === END ENHANCED CARD STYLE === */
 
-
         /* Loading and Error States */
         .loading-container, .error-container, .location-prompt {
             display: flex;
@@ -201,6 +200,39 @@
             align-items: center;
             gap: 8px;
         }
+        
+        .secondary-button {
+            background-color: #4CAF50 !important;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        /* Fallback header */
+        .fallback-header {
+            background: #e3f2fd;
+            border-left: 4px solid #1976D2;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1976D2;
+        }
+        
+        /* Location Prompt */
+        .location-prompt {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+        }
+        
         /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
@@ -248,12 +280,12 @@
             <div class="filter-container">
                 <label for="radius-select">Radius:</label>
                 <select id="radius-select">
+                    <option value="5">5 km</option>
                     <option value="10">10 km</option>
                     <option value="20">20 km</option>
                     <option value="30">30 km</option>
-                    <option value="60" selected>60 km</option>
+                    <option value="50" selected>50 km</option>
                     <option value="100">100 km</option>
-                    <option value="200">200 km</option>
                     <option value="unlimited">Unlimited</option> 
                 </select>
             </div>
@@ -264,7 +296,8 @@
             </div>
             
             <div id="products-list-container">
-                </div>
+                <!-- Products will be displayed here -->
+            </div>
         </div>
 
         <div class="bottom-nav">
@@ -311,6 +344,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
         // =========================================================================
         // Global Variables
@@ -320,134 +354,331 @@
         const productsListContainer = document.getElementById('products-list-container');
 
         let userLocation = null;
-        // CHANGED: Initial radius to string '60' to match select option value type
-        let currentRadius = '60'; 
+        let currentRadius = '50';
+        let userCity = null;
+        let locationAccessBlocked = false;
 
         // =========================================================================
-        // Geo-Filtering Logic
+        // MAIN INITIALIZATION - LOCATION FIRST PRIORITY
         // =========================================================================
 
-        // Haversine formula to calculate distance between two lat/lng points
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radius of Earth in kilometers
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                        Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const d = R * c; // Distance in km
-            return d;
-        }
-
-        /**
-         * Extracts numeric latitude and longitude from the product data, 
-         * handling GeoPoint ('geo') and the non-standard string ('location').
-         */
-        function extractCoordinates(productData) {
-            let lat = null;
-            let lng = null;
-
-            // 1. Check for the standard GeoPoint field (named 'geo')
-            if (productData.geo && typeof productData.geo.latitude === 'number' && typeof productData.geo.longitude === 'number') {
-                lat = productData.geo.latitude;
-                lng = productData.geo.longitude;
-            } 
-            // 2. Check for the non-standard 'location' string (e.g., "9.8895 N, 78.0546 E")
-            else if (productData.location && typeof productData.location === 'string') {
-                const parts = productData.location.split(',');
-                if (parts.length >= 2) {
-                    lat = parseFloat(parts[0].replace(/[^0-9.-]/g, ''));
-                    lng = parseFloat(parts[1].replace(/[^0-9.-]/g, ''));
-                }
-            }
+        async function initApp() {
+            console.log("Initializing app...");
+            currentRadius = radiusSelect.value;
             
-            // Validate that we got numbers and return
-            if (!isNaN(lat) && !isNaN(lng)) {
-                return { lat, lng };
-            }
-            return null;
+            // FIRST PRIORITY: Get current location and fetch nearby products
+            await getCurrentLocationAndFetchProducts();
         }
 
-        // Fetch products from Firebase and filter by distance
-        async function fetchNearbyProducts(location, radiusValue) {
+        // =========================================================================
+        // LOCATION-BASED PRODUCT FETCHING (FIRST PRIORITY)
+        // =========================================================================
+
+        async function getCurrentLocationAndFetchProducts() {
+            console.log("Attempting to get current location...");
+            
+            if (!navigator.geolocation) {
+                console.log("Geolocation not supported");
+                showLocationNotSupported();
+                return;
+            }
+
             productsListContainer.innerHTML = '';
             loadingContainer.style.display = 'flex';
+            loadingContainer.innerHTML = `
+                <div class="loading-spinner"></div>
+                <p>Getting your location...</p>
+            `;
+
+            navigator.geolocation.getCurrentPosition(
+                // Success: Got location
+                async (position) => {
+                    console.log("Location obtained successfully");
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    locationAccessBlocked = false;
+                    
+                    loadingContainer.innerHTML = `
+                        <div class="loading-spinner"></div>
+                        <p>Finding products near you...</p>
+                    `;
+                    
+                    // Fetch products based on distance from current location
+                    await fetchProductsByDistance(userLocation, currentRadius);
+                },
+                // Error: Failed to get location
+                async (error) => {
+                    console.log("Location access failed:", error);
+                    locationAccessBlocked = true;
+                    loadingContainer.style.display = 'none';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            console.log("User denied location permission");
+                            showLocationPermissionDenied();
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                        case error.TIMEOUT:
+                        default:
+                            console.log("Location unavailable, trying city-based fallback");
+                            // SECOND PRIORITY: Try city-based matching
+                            await tryCityBasedFallback('location_unavailable');
+                            break;
+                    }
+                },
+                { 
+                    enableHighAccuracy: true, 
+                    timeout: 10000, 
+                    maximumAge: 300000
+                }
+            );
+        }
+
+        // =========================================================================
+        // DISTANCE-BASED PRODUCT FILTERING (FIRST PRIORITY)
+        // =========================================================================
+
+        async function fetchProductsByDistance(location, radiusValue) {
+            console.log("Fetching products by distance...");
             
-            // CONVERT RADIUS TO NUMBER, 'unlimited' will become NaN
-            const radius = parseFloat(radiusValue); 
-            const isUnlimited = radiusValue === 'unlimited' || isNaN(radius); 
+            const isUnlimited = radiusValue === 'unlimited';
 
             try {
-                // IMPORTANT: Since Firestore cannot perform geo-queries, we fetch ALL products 
-                // and then filter them client-side using the Haversine formula.
-                // For a large number of products, this will be slow and costly.
                 const productsCollection = await db.collection('products').get();
                 const productsList = [];
                 
                 productsCollection.forEach(doc => {
                     const productData = doc.data();
-                    const productCoords = extractCoordinates(productData); 
                     
-                    // Always filter by status first
+                    // Filter by status first
                     if (productData.status !== 'available') {
-                        return; // Skip if not available
+                        return;
                     }
 
                     let distance = null;
 
-                    // Only proceed with distance calculation if radius is NOT unlimited AND we have coordinates
-                    if (!isUnlimited && productCoords) {
-                        distance = getDistance(
-                            location.lat,
-                            location.lng,
-                            productCoords.lat,
-                            productCoords.lng
-                        );
+                    // Calculate distance for all products (even for unlimited, we still calculate but don't filter)
+                    if (location.lat !== null && location.lng !== null) {
+                        const productCoords = extractCoordinates(productData);
+                        if (productCoords) {
+                            distance = getDistance(
+                                location.lat,
+                                location.lng,
+                                productCoords.lat,
+                                productCoords.lng
+                            ).toFixed(1);
+                        }
                     }
-                    
-                    // --- DISTANCE CHECK LOGIC ---
-                    if (isUnlimited || distance <= radius) {
+
+                    // For unlimited radius, add all available products
+                    // For limited radius, only add if within range
+                    if (isUnlimited || (distance !== null && distance <= parseFloat(radiusValue))) {
                         productsList.push({
                             id: doc.id,
                             ...productData,
-                            // If distance is calculated, use it. Otherwise, set a descriptive string.
-                            distance: distance !== null ? distance.toFixed(1) : 'Not Applicable' 
+                            distance: distance,
+                            matchType: 'distance'
                         });
                     }
-                    // --- END DISTANCE CHECK LOGIC ---
                 });
 
                 loadingContainer.style.display = 'none';
 
                 if (productsList.length === 0) {
-                    showNoProductsFound(isUnlimited ? 'area' : `${radius} km`);
+                    console.log("No products found by distance, trying city fallback...");
+                    // No products found by distance, try city-based fallback
+                    await tryCityBasedFallback('no_products_nearby');
                 } else {
-                    displayProducts(productsList, radiusValue); // Pass the original value to display logic
+                    console.log(`Found ${productsList.length} products by distance`);
+                    displayProducts(productsList, radiusValue, false);
                 }
 
             } catch (error) {
-                console.error("Error fetching products: ", error);
+                console.error("Error fetching products by distance: ", error);
                 loadingContainer.style.display = 'none';
                 showError("Failed to fetch products. Please check your console for details.");
             }
         }
 
         // =========================================================================
-        // UI Rendering Functions (MODIFIED for Unlimited)
+        // CITY-BASED FALLBACK (SECOND PRIORITY)
         // =========================================================================
 
-        // Helper function for price formatting (e.g., 5600.00 -> 5,600.00)
-        function formatPrice(price) {
-            // Use en-IN locale for Indian Rupee format (commas for thousands)
-            return parseFloat(price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        async function tryCityBasedFallback(fallbackReason) {
+            console.log("Attempting city-based fallback...");
+            
+            // Get user's city from Firestore
+            userCity = await getUserCity();
+            console.log("User city from profile:", userCity);
+            
+            if (!userCity) {
+                console.log("No user city available, showing location error");
+                showLocationError("We need your location to show nearby products.");
+                return;
+            }
+
+            loadingContainer.style.display = 'flex';
+            loadingContainer.innerHTML = `
+                <div class="loading-spinner"></div>
+                <p>Finding products in ${userCity}...</p>
+            `;
+
+            try {
+                const productsCollection = await db.collection('products').get();
+                const filteredProducts = [];
+                
+                productsCollection.forEach(doc => {
+                    const productData = doc.data();
+                    
+                    if (productData.status !== 'available') {
+                        return;
+                    }
+
+                    // Check if product has location text or city field
+                    const productLocation = productData.location_text || productData.city || '';
+                    if (!productLocation) {
+                        return;
+                    }
+
+                    // Simple contains matching for city
+                    if (doesCityMatch(userCity, productLocation)) {
+                        filteredProducts.push({
+                            id: doc.id,
+                            ...productData,
+                            distance: 'City Match',
+                            matchType: 'city',
+                            matchedCity: userCity
+                        });
+                    }
+                });
+
+                loadingContainer.style.display = 'none';
+
+                if (filteredProducts.length === 0) {
+                    console.log("No products found in user city");
+                    showNoProductsWithCityFallback(userCity);
+                } else {
+                    console.log(`Found ${filteredProducts.length} products by city match`);
+                    displayProducts(filteredProducts, currentRadius, true, userCity, fallbackReason);
+                }
+
+            } catch (error) {
+                console.error("Error in city-based fallback: ", error);
+                loadingContainer.style.display = 'none';
+                showError("Failed to fetch products by city.");
+            }
         }
 
-        // Display products
-        function displayProducts(products, radiusValue) {
+        // =========================================================================
+        // STRING MATCHING FUNCTIONS
+        // =========================================================================
+
+        function doesCityMatch(userCity, productLocation) {
+            if (!userCity || !productLocation) return false;
+            
+            const userCityLower = userCity.toLowerCase().trim();
+            const productLocationLower = productLocation.toLowerCase().trim();
+            
+            // Exact match
+            if (productLocationLower.includes(userCityLower)) return true;
+            
+            // Word-based matching
+            const userWords = userCityLower.split(/\s+/);
+            const productWords = productLocationLower.split(/\s+/);
+            
+            for (let userWord of userWords) {
+                if (userWord.length > 2) {
+                    for (let productWord of productWords) {
+                        if (productWord.length > 2 && 
+                            (userWord.includes(productWord) || productWord.includes(userWord))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        // Fetch user's city from Firestore
+        async function getUserCity() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return null;
+                
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    
+                    // Check different possible city fields
+                    if (userData.locationData && userData.locationData.city) {
+                        return userData.locationData.city;
+                    } else if (userData.city) {
+                        return userData.city;
+                    } else if (userData.address) {
+                        // Try to extract city from address string
+                        const address = userData.address.toString();
+                        const cityMatch = address.match(/([A-Za-z\s]+)(?:,|\s|$)/);
+                        return cityMatch ? cityMatch[1].trim() : null;
+                    }
+                }
+                return null;
+            } catch (error) {
+                console.error("Error fetching user city:", error);
+                return null;
+            }
+        }
+
+        // =========================================================================
+        // UI RENDERING FUNCTIONS
+        // =========================================================================
+
+        function formatPrice(price) {
+            return parseFloat(price).toLocaleString('en-IN', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+        }
+
+        function displayProducts(products, radiusValue, isFallback = false, matchedCity = null, fallbackReason = null) {
             const isUnlimited = radiusValue === 'unlimited';
 
+            let headerHTML = '';
+            if (isFallback) {
+                let headerText = '';
+                let subText = '';
+                
+                switch(fallbackReason) {
+                    case 'location_unavailable':
+                        headerText = '📍 Location Unavailable';
+                        subText = `Showing products from ${matchedCity}`;
+                        break;
+                    case 'no_products_nearby':
+                        headerText = '📍 No Products Nearby';
+                        subText = `Showing products from ${matchedCity}`;
+                        break;
+                    case 'location_blocked':
+                        headerText = '📍 Location Access Required';
+                        subText = `Showing products from ${matchedCity}`;
+                        break;
+                    default:
+                        headerText = `📍 Showing products from ${matchedCity}`;
+                        subText = 'Based on your profile city';
+                }
+                
+                headerHTML = `
+                    <div class="fallback-header">
+                        <strong>${headerText}</strong>
+                        <br>
+                        <small>${subText}</small>
+                    </div>
+                `;
+            }
+
             productsListContainer.innerHTML = `
+                ${headerHTML}
                 <div id="products-list"></div>
             `;
             
@@ -463,18 +694,18 @@
                 const locationText = product.location_text || '';
                 const displayCategory = product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1) : 'General';
                 
-                // Determine the distance/location display text
+                // Distance/location display
                 let distanceDisplay = '';
-                if (isUnlimited) {
+                if (isFallback) {
+                    distanceDisplay = '📍 ' + (locationText || matchedCity || 'Various Locations');
+                } else if (isUnlimited) {
                     distanceDisplay = locationText || 'Location Not Specified';
                 } else {
-                    // Use the pre-calculated/stored distance if available, otherwise location text
-                    distanceDisplay = product.distance && product.distance !== 'Not Applicable' 
-                                      ? product.distance + ' km away' 
-                                      : locationText || 'Location Not Specified';
+                    distanceDisplay = product.distance && product.distance !== 'null' 
+                                    ? product.distance + ' km away' 
+                                    : locationText || 'Location Not Specified';
                 }
 
-                // The structure is now: Image | Name, Location, Price, Category/Distance
                 productCard.innerHTML = `
                     <img src="${imageUrl}" alt="${product.title}" class="product-image">
                     <div class="product-details">
@@ -490,6 +721,7 @@
                                     ${displayCategory}
                                 </span>
                             </div>
+                            ${isFallback ? '<span style="color: #4CAF50; font-size: 12px; display: block; margin-top: 4px;">📍 City Match</span>' : ''}
                         </div>
 
                         <span class="product-price">₹${formatPrice(product.price)}</span>
@@ -499,12 +731,80 @@
             });
         }
 
-        function showNoProductsFound(radiusText) {
+        // =========================================================================
+        // ERROR AND PROMPT FUNCTIONS
+        // =========================================================================
+
+        function showLocationPermissionDenied() {
+            productsListContainer.innerHTML = `
+                <div class="location-prompt">
+                    <span class="material-icons" style="font-size: 48px; color: #ff9800; margin-bottom: 16px;">location_off</span>
+                    <h3>Location Access Required</h3>
+                    <p>To show products near you, we need access to your location.</p>
+                    <div class="button-group">
+                        <button class="location-button" onclick="retryLocationAccess()">
+                            <span class="material-icons">my_location</span>
+                            Allow Location Access
+                        </button>
+                        <button class="location-button secondary-button" onclick="tryCityBasedFallback('location_blocked')">
+                            <span class="material-icons">explore</span>
+                            Browse by My City
+                        </button>
+                    </div>
+                    <p style="margin-top: 12px; font-size: 12px; color: #666;">
+                        Or change radius to "Unlimited" to see all products
+                    </p>
+                </div>
+            `;
+        }
+
+        function showLocationError(message) {
             productsListContainer.innerHTML = `
                 <div class="error-container">
-                    <span class="material-icons" style="font-size: 48px; color: #666; margin-bottom: 16px;">sentiment_dissatisfied</span>
-                    <p>No available products found within your **${radiusText}**.</p>
-                    <p>Try changing the radius using the filter above!</p>
+                    <span class="material-icons" style="font-size: 48px; color: #f44336; margin-bottom: 16px;">error_outline</span>
+                    <p>${message}</p>
+                    <div class="button-group">
+                        <button class="location-button" onclick="retryLocationAccess()">
+                            <span class="material-icons">my_location</span>
+                            Retry Location
+                        </button>
+                        <button class="location-button secondary-button" onclick="useUnlimitedRadius()">
+                            <span class="material-icons">explore</span>
+                            Show All Products
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showNoProductsWithCityFallback(userCity) {
+            productsListContainer.innerHTML = `
+                <div class="error-container">
+                    <span class="material-icons" style="font-size: 48px; color: #666; margin-bottom: 16px;">location_searching</span>
+                    <p>No available products found in <strong>${userCity}</strong>.</p>
+                    <div class="button-group">
+                        <button class="location-button" onclick="retryLocationAccess()">
+                            <span class="material-icons">my_location</span>
+                            Try Location Again
+                        </button>
+                        <button class="location-button secondary-button" onclick="useUnlimitedRadius()">
+                            <span class="material-icons">explore</span>
+                            Show All Products
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showLocationNotSupported() {
+            productsListContainer.innerHTML = `
+                <div class="error-container">
+                    <span class="material-icons" style="font-size: 48px; color: #f44336; margin-bottom: 16px;">error</span>
+                    <p>Geolocation is not supported by your browser.</p>
+                    <button class="location-button secondary-button" onclick="useUnlimitedRadius()" style="margin-top: 16px;">
+                        <span class="material-icons">explore</span>
+                        Show All Products
+                    </button>
                 </div>
             `;
         }
@@ -518,94 +818,71 @@
             `;
         }
 
-        function showLocationError() {
-            productsListContainer.innerHTML = `
-                <div class="error-container">
-                    <span class="material-icons" style="font-size: 48px; color: #f44336; margin-bottom: 16px;">location_off</span>
-                    <p>We need your location to show nearby products.</p>
-                    <button class="location-button" onclick="initApp()">
-                        <span class="material-icons">my_location</span>
-                        Enable Location
-                    </button>
-                </div>
-            `;
+        // =========================================================================
+        // UTILITY FUNCTIONS
+        // =========================================================================
+
+        function retryLocationAccess() {
+            getCurrentLocationAndFetchProducts();
         }
 
-        function showLocationNotSupported() {
-            productsListContainer.innerHTML = `
-                <div class="error-container">
-                    <span class="material-icons" style="font-size: 48px; color: #f44336; margin-bottom: 16px;">error</span>
-                    <p>Geolocation is not supported by your browser.</p>
-                    <p>This app requires location services.</p>
-                </div>
-            `;
+        function useUnlimitedRadius() {
+            radiusSelect.value = 'unlimited';
+            currentRadius = 'unlimited';
+            fetchProductsByDistance(userLocation || {lat: null, lng: null}, 'unlimited');
+        }
+
+        // Haversine formula to calculate distance between two lat/lng points
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of Earth in kilometers
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                        Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const d = R * c; // Distance in km
+            return d;
+        }
+
+        function extractCoordinates(productData) {
+            let lat = null;
+            let lng = null;
+
+            if (productData.geo && typeof productData.geo.latitude === 'number' && typeof productData.geo.longitude === 'number') {
+                lat = productData.geo.latitude;
+                lng = productData.geo.longitude;
+            } else if (productData.location && typeof productData.location === 'string') {
+                const parts = productData.location.split(',');
+                if (parts.length >= 2) {
+                    lat = parseFloat(parts[0].replace(/[^0-9.-]/g, ''));
+                    lng = parseFloat(parts[1].replace(/[^0-9.-]/g, ''));
+                }
+            }
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                return { lat, lng };
+            }
+            return null;
         }
 
         // =========================================================================
-        // Initialization & Event Handlers
+        // EVENT HANDLERS
         // =========================================================================
-
-        function initApp() {
-            // Get the initial radius from the select box's selected value
-            currentRadius = radiusSelect.value; 
-
-            if (currentRadius === 'unlimited') {
-                // If 'Unlimited' is selected, we don't strictly need the user's location
-                // to fetch products, but we will still try to get it to calculate distances 
-                // for the limited radii later, or if the user switches.
-                getGeolocationAndFetch();
-            } else {
-                // If a distance is selected, location is mandatory
-                getGeolocationAndFetch();
-            }
-        }
-        
-        // New helper function to encapsulate location fetching
-        function getGeolocationAndFetch() {
-            if (navigator.geolocation) {
-                productsListContainer.innerHTML = '';
-                loadingContainer.style.display = 'flex';
-
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        };
-                        fetchNearbyProducts(userLocation, currentRadius);
-                    },
-                    error => {
-                        // If location fails, and we are NOT on 'unlimited', show error.
-                        // If we are on 'unlimited', we can still fetch all items (though distance calc will be N/A)
-                        if (currentRadius === 'unlimited') {
-                            // Use dummy location for 'unlimited' fetch if user location is unavailable
-                            userLocation = { lat: 0, lng: 0 }; 
-                            fetchNearbyProducts(userLocation, currentRadius);
-                        } else {
-                            loadingContainer.style.display = 'none';
-                            showLocationError();
-                        }
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-                );
-            } else {
-                loadingContainer.style.display = 'none';
-                showLocationNotSupported();
-            }
-        }
 
         radiusSelect.addEventListener('change', function() {
             currentRadius = this.value;
             
-            if (userLocation) {
-                fetchNearbyProducts(userLocation, currentRadius);
+            if (currentRadius === 'unlimited') {
+                fetchProductsByDistance(userLocation || {lat: null, lng: null}, currentRadius);
+            } else if (userLocation) {
+                fetchProductsByDistance(userLocation, currentRadius);
             } else {
-                // If location wasn't acquired initially, try again or handle 'unlimited'
-                getGeolocationAndFetch(); 
+                getCurrentLocationAndFetchProducts();
             }
         });
 
-        // Navigation handlers (unchanged)
+        // Navigation handlers
         document.getElementById('category-nav').addEventListener('click', (e) => { e.preventDefault(); window.location.href = "categorypage.html"; });
         document.getElementById('home-nav').addEventListener('click', (e) => { e.preventDefault(); window.location.href = "homepage.html"; });
         document.getElementById('saved-nav').addEventListener('click', (e) => { e.preventDefault(); window.location.href = "savedpage.html"; });

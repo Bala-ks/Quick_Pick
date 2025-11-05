@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaints Management - QuickPick Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(to bottom, #1976D2, #1565C0);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            margin-left: 10px;
+        }
+        
+        .logo i {
+            font-size: 28px;
+        }
+        
+        .nav-links {
+            margin-top: 30px;
+        }
+        
+        .nav-links li {
+            list-style: none;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .nav-links li:hover, .nav-links li.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid white;
+        }
+        
+        .nav-links li i {
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h2 {
+            color: #1976D2;
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Stats Cards */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card .label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Search and Filters */
+        .filters-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            min-width: 150px;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        
+        /* Complaints Table */
+        .table-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .table-header {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-header h3 {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .complaint-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status.pending {
+            background-color: #fff8e6;
+            color: #f39c12;
+        }
+        
+        .status.reviewed {
+            background-color: #e6f0ff;
+            color: #1976D2;
+        }
+        
+        .status.resolved {
+            background-color: #e6f7ee;
+            color: #00a65a;
+        }
+        
+        .status.rejected {
+            background-color: #fde8e8;
+            color: #e74c3c;
+        }
+        
+        .complaint-type {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: #1976D2;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-remove {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-resolve {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .btn-reject {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .action-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        /* Complaint Details Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            color: #333;
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .complaint-detail-section {
+            margin-bottom: 25px;
+        }
+        
+        .complaint-detail-section h4 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .detail-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .detail-item label {
+            font-weight: 500;
+            color: #666;
+            font-size: 12px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .detail-item .value {
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .evidence-section {
+            background: #fff8e6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: #1976D2;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .filters-container {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <i class="material-icons">bolt</i>
+                <h1>QuickPick</h1>
+            </div>
+            <ul class="nav-links">
+                <li data-page="adminpage.html"><i class="material-icons">dashboard</i> Dashboard</li>
+                <li data-page="adminuserview.html"><i class="material-icons">people</i> Users</li>
+                <li data-page="adminproductview.html"><i class="material-icons">inventory_2</i> Products</li>
+                <li data-page="admincomplaintsview.html" class="active"><i class="material-icons">warning</i> Complaints</li>
+                <li style="cursor: not-allowed; opacity: 0.6;" title="Coming Soon"><i class="material-icons">analytics</i> Analytics (Coming Soon)</li>
+                <li style="cursor: not-allowed; opacity: 0.6;" title="Coming Soon"><i class="material-icons">settings</i> Settings (Coming Soon)</li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h2>Complaints Management</h2>
+                <div class="user-info">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=1976D2&color=fff" alt="Admin">
+                    <span>Admin User</span>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="number" id="total-complaints">0</div>
+                    <div class="label">Total Complaints</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="pending-complaints">0</div>
+                    <div class="label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="reviewed-complaints">0</div>
+                    <div class="label">Reviewed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="resolved-complaints">0</div>
+                    <div class="label">Resolved</div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters-container">
+                <select class="filter-select" id="status-filter">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="reviewed">Reviewed</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                
+                <select class="filter-select" id="type-filter">
+                    <option value="all">All Types</option>
+                    <option value="fake_product">Fake Product</option>
+                    <option value="inappropriate_content">Inappropriate</option>
+                    <option value="wrong_category">Wrong Category</option>
+                    <option value="spam">Spam</option>
+                    <option value="harassment">Harassment</option>
+                    <option value="other">Other</option>
+                </select>
+                
+                <select class="filter-select" id="sort-by">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+                
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search by complaint ID, product name, or user...">
+                    <i class="material-icons search-icon">search</i>
+                </div>
+            </div>
+            
+            <!-- Complaints Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>All Complaints</h3>
+                    <div>
+                        <span id="complaints-count">0 complaints</span>
+                        <button class="refresh-btn" onclick="loadComplaints()">
+                            <i class="material-icons">refresh</i>
+                        </button>
+                    </div>
+                </div>
+                <div id="complaints-table">
+                    <div class="loading">Loading complaints...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaint Details Modal -->
+    <div class="modal" id="complaint-detail-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Complaint Details</h3>
+                <button class="close-btn" onclick="closeComplaintModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="complaint-detail-content">
+                    <!-- Complaint details will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Confirmation Modal -->
+    <div class="modal" id="action-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="action-title">Confirm Action</h3>
+                <button class="close-btn" onclick="closeActionModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="action-message">
+                    <!-- Action message will be inserted here -->
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="closeActionModal()">Cancel</button>
+                    <button class="btn btn-danger" id="confirm-action-btn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaDYNBIxppwwf3PtBKgz-14_6eVYQVRL0",
+            authDomain: "quickpick-1523f.firebaseapp.com",
+            projectId: "quickpick-1523f",
+            storageBucket: "quickpick-1523f.appspot.com",
+            messagingSenderId: "814647987706",
+            appId: "1:814647987706:web:01595f83582fe3de0e2843",
+            measurementId: "G-MMK0VWMY8T"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Global variables
+        let allComplaints = [];
+        let currentSelectedComplaint = null;
+        let currentAction = null;
+
+        // Load complaints from Firebase
+        async function loadComplaints() {
+            const complaintsTable = document.getElementById('complaints-table');
+            complaintsTable.innerHTML = '<div class="loading">Loading complaints...</div>';
+            
+            try {
+                const complaintsSnapshot = await db.collection('complaints').get();
+                allComplaints = [];
+                
+                complaintsSnapshot.forEach((doc) => {
+                    const complaintData = doc.data();
+                    allComplaints.push({
+                        id: doc.id,
+                        ...complaintData
+                    });
+                });
+                
+                updateComplaintStats();
+                displayComplaints(allComplaints);
+                
+            } catch (error) {
+                console.error("Error loading complaints: ", error);
+                complaintsTable.innerHTML = '<div class="loading">Error loading complaints</div>';
+            }
+        }
+
+        // Update complaint statistics
+        function updateComplaintStats() {
+            const totalComplaints = allComplaints.length;
+            const pendingComplaints = allComplaints.filter(complaint => complaint.status === 'pending').length;
+            const reviewedComplaints = allComplaints.filter(complaint => complaint.status === 'reviewed').length;
+            const resolvedComplaints = allComplaints.filter(complaint => complaint.status === 'resolved').length;
+            const rejectedComplaints = allComplaints.filter(complaint => complaint.status === 'rejected').length;
+            
+            document.getElementById('total-complaints').textContent = totalComplaints;
+            document.getElementById('pending-complaints').textContent = pendingComplaints;
+            document.getElementById('reviewed-complaints').textContent = reviewedComplaints;
+            document.getElementById('resolved-complaints').textContent = resolvedComplaints;
+            document.getElementById('complaints-count').textContent = `${totalComplaints} complaints`;
+        }
+
+        // Display complaints in table
+        function displayComplaints(complaints) {
+            const complaintsTable = document.getElementById('complaints-table');
+            
+            if (complaints.length === 0) {
+                complaintsTable.innerHTML = '<div class="loading">No complaints found</div>';
+                return;
+            }
+            
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Complaint ID</th>
+                            <th>Product</th>
+                            <th>Complainant</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            complaints.forEach((complaint) => {
+                const complaintId = complaint.id;
+                const productTitle = complaint.productTitle || 'Unknown Product';
+                const complainantName = complaint.complainantName || 'Anonymous User';
+                const complaintType = complaint.complaintType || 'other';
+                const status = complaint.status || 'pending';
+                const complaintDate = complaint.createdAt ? new Date(complaint.createdAt.toDate()).toLocaleDateString() : 'Unknown';
+                
+                tableHTML += `
+                    <tr>
+                        <td>
+                            <div class="complaint-id">${complaintId.substring(0, 8)}...</div>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <img src="${complaint.productImage || 'https://via.placeholder.com/50x50?text=No+Image'}" 
+                                     alt="${productTitle}" class="product-image">
+                                <div style="margin-left: 10px;">
+                                    <div style="font-weight: 500;">${productTitle}</div>
+                                    <div style="font-size: 12px; color: #666;">₹${parseFloat(complaint.productPrice || 0).toLocaleString('en-IN')}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">${complainantName}</div>
+                            <div style="font-size: 12px; color: #666;">${complaint.complainantEmail || 'No email'}</div>
+                        </td>
+                        <td>
+                            <span class="complaint-type">${formatComplaintType(complaintType)}</span>
+                        </td>
+                        <td><span class="status ${status}">${status}</span></td>
+                        <td>${complaintDate}</td>
+                        <td>
+                            <button class="action-btn btn-view" onclick="viewComplaintDetails('${complaintId}')">View</button>
+                            ${status === 'pending' ? `
+                                <button class="action-btn btn-remove" onclick="confirmRemoveProduct('${complaintId}')">Remove Product</button>
+                                <button class="action-btn btn-resolve" onclick="resolveComplaint('${complaintId}')">Resolve</button>
+                                <button class="action-btn btn-reject" onclick="rejectComplaint('${complaintId}')">Reject</button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            complaintsTable.innerHTML = tableHTML;
+        }
+
+        // Format complaint type for display
+        function formatComplaintType(type) {
+            const typeMap = {
+                'fake_product': 'Fake Product',
+                'inappropriate_content': 'Inappropriate',
+                'wrong_category': 'Wrong Category',
+                'spam': 'Spam',
+                'harassment': 'Harassment',
+                'other': 'Other'
+            };
+            return typeMap[type] || type;
+        }
+
+        // View complaint details
+        async function viewComplaintDetails(complaintId) {
+            const complaint = allComplaints.find(c => c.id === complaintId);
+            if (!complaint) return;
+            
+            currentSelectedComplaint = complaint;
+            
+            const complaintDetailContent = document.getElementById('complaint-detail-content');
+            
+            // Format complaint details
+            const complaintDate = complaint.createdAt ? new Date(complaint.createdAt.toDate()).toLocaleString() : 'Unknown';
+            const updatedDate = complaint.updatedAt ? new Date(complaint.updatedAt.toDate()).toLocaleString() : 'Not updated';
+            
+            let complaintDetailsHTML = `
+                <div class="complaint-detail-section">
+                    <h4>Complaint Information</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Complaint ID</label>
+                            <div class="value">${complaint.id}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Status</label>
+                            <div class="value"><span class="status ${complaint.status}">${complaint.status}</span></div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Type</label>
+                            <div class="value">${formatComplaintType(complaint.complaintType)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Submitted Date</label>
+                            <div class="value">${complaintDate}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Last Updated</label>
+                            <div class="value">${updatedDate}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="complaint-detail-section">
+                    <h4>Product Information</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Product ID</label>
+                            <div class="value">${complaint.productId}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Product Title</label>
+                            <div class="value">${complaint.productTitle}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Price</label>
+                            <div class="value">₹${parseFloat(complaint.productPrice || 0).toLocaleString('en-IN')}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Seller</label>
+                            <div class="value">${complaint.sellerName || 'Unknown Seller'}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <img src="${complaint.productImage || 'https://via.placeholder.com/200x200?text=No+Image'}" 
+                             alt="${complaint.productTitle}" 
+                             style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                    </div>
+                </div>
+                
+                <div class="complaint-detail-section">
+                    <h4>Complainant Information</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Name</label>
+                            <div class="value">${complaint.complainantName || 'Anonymous User'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Email</label>
+                            <div class="value">${complaint.complainantEmail || 'No email'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>User ID</label>
+                            <div class="value">${complaint.complainantId || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="complaint-detail-section">
+                    <h4>Complaint Details</h4>
+                    <div class="detail-item">
+                        <label>Description</label>
+                        <div class="value" style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                            ${complaint.complaintDetails || 'No details provided.'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Evidence section
+            if (complaint.complaintEvidence) {
+                complaintDetailsHTML += `
+                    <div class="complaint-detail-section">
+                        <h4>Evidence Provided</h4>
+                        <div class="evidence-section">
+                            <div class="value">${complaint.complaintEvidence}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Action buttons for pending complaints
+            if (complaint.status === 'pending') {
+                complaintDetailsHTML += `
+                    <div class="complaint-detail-section">
+                        <h4>Admin Actions</h4>
+                        <div class="action-buttons">
+                            <button class="btn btn-danger" onclick="confirmRemoveProduct('${complaint.id}')">
+                                Remove Product
+                            </button>
+                            <button class="btn btn-success" onclick="resolveComplaint('${complaint.id}')">
+                                Mark as Resolved
+                            </button>
+                            <button class="btn btn-warning" onclick="rejectComplaint('${complaint.id}')">
+                                Reject Complaint
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            complaintDetailContent.innerHTML = complaintDetailsHTML;
+            document.getElementById('complaint-detail-modal').style.display = "flex";
+        }
+
+        // Confirm remove product action
+        function confirmRemoveProduct(complaintId) {
+            const complaint = allComplaints.find(c => c.id === complaintId);
+            if (!complaint) return;
+            
+            currentSelectedComplaint = complaint;
+            currentAction = 'remove_product';
+            
+            document.getElementById('action-title').textContent = 'Remove Product';
+            document.getElementById('action-message').innerHTML = `
+                <p>Are you sure you want to remove the product "<strong>${complaint.productTitle}</strong>"?</p>
+                <p style="color: #e74c3c; margin-top: 10px;">
+                    <strong>Warning:</strong> This action cannot be undone. The product will be permanently removed from the platform.
+                </p>
+                <p style="margin-top: 10px;">
+                    <strong>Reason:</strong> ${formatComplaintType(complaint.complaintType)} - ${complaint.complaintDetails.substring(0, 100)}...
+                </p>
+            `;
+            
+            document.getElementById('confirm-action-btn').className = 'btn btn-danger';
+            document.getElementById('confirm-action-btn').textContent = 'Remove Product';
+            document.getElementById('confirm-action-btn').onclick = removeProduct;
+            
+            document.getElementById('action-modal').style.display = "flex";
+        }
+
+        // Remove product from platform
+        async function removeProduct() {
+            if (!currentSelectedComplaint) return;
+            
+            try {
+                // Remove the product from products collection
+                await db.collection('products').doc(currentSelectedComplaint.productId).delete();
+                
+                // Update complaint status
+                await db.collection('complaints').doc(currentSelectedComplaint.id).update({
+                    status: 'resolved',
+                    actionTaken: 'product_removed',
+                    resolvedBy: 'Admin',
+                    resolvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('Product removed successfully and complaint marked as resolved.');
+                closeActionModal();
+                closeComplaintModal();
+                loadComplaints(); // Refresh the list
+                
+            } catch (error) {
+                console.error('Error removing product:', error);
+                alert('Failed to remove product. Please try again.');
+            }
+        }
+
+        // Resolve complaint (keep product)
+        async function resolveComplaint(complaintId) {
+            if (!confirm('Mark this complaint as resolved? The product will remain on the platform.')) return;
+            
+            try {
+                await db.collection('complaints').doc(complaintId).update({
+                    status: 'resolved',
+                    actionTaken: 'complaint_resolved',
+                    resolvedBy: 'Admin',
+                    resolvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('Complaint marked as resolved.');
+                closeComplaintModal();
+                loadComplaints(); // Refresh the list
+                
+            } catch (error) {
+                console.error('Error resolving complaint:', error);
+                alert('Failed to resolve complaint. Please try again.');
+            }
+        }
+
+        // Reject complaint
+        async function rejectComplaint(complaintId) {
+            if (!confirm('Reject this complaint? The complaint will be marked as rejected.')) return;
+            
+            try {
+                await db.collection('complaints').doc(complaintId).update({
+                    status: 'rejected',
+                    actionTaken: 'complaint_rejected',
+                    resolvedBy: 'Admin',
+                    resolvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('Complaint rejected.');
+                closeComplaintModal();
+                loadComplaints(); // Refresh the list
+                
+            } catch (error) {
+                console.error('Error rejecting complaint:', error);
+                alert('Failed to reject complaint. Please try again.');
+            }
+        }
+
+        // Close modals
+        function closeComplaintModal() {
+            document.getElementById('complaint-detail-modal').style.display = "none";
+        }
+
+        function closeActionModal() {
+            document.getElementById('action-modal').style.display = "none";
+            currentSelectedComplaint = null;
+            currentAction = null;
+        }
+
+        // Filter and search functionality
+        document.getElementById('search-input').addEventListener('input', function() {
+            filterComplaints();
+        });
+
+        document.getElementById('status-filter').addEventListener('change', function() {
+            filterComplaints();
+        });
+
+        document.getElementById('type-filter').addEventListener('change', function() {
+            filterComplaints();
+        });
+
+        document.getElementById('sort-by').addEventListener('change', function() {
+            filterComplaints();
+        });
+
+        function filterComplaints() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+            const sortBy = document.getElementById('sort-by').value;
+            
+            let filteredComplaints = allComplaints.filter(complaint => {
+                const complaintId = complaint.id.toLowerCase();
+                const productTitle = (complaint.productTitle || '').toLowerCase();
+                const complainantName = (complaint.complainantName || '').toLowerCase();
+                const complainantEmail = (complaint.complainantEmail || '').toLowerCase();
+                
+                const matchesSearch = complaintId.includes(searchTerm) || 
+                                   productTitle.includes(searchTerm) || 
+                                   complainantName.includes(searchTerm) ||
+                                   complainantEmail.includes(searchTerm);
+                
+                const matchesStatus = statusFilter === 'all' || complaint.status === statusFilter;
+                const matchesType = typeFilter === 'all' || complaint.complaintType === typeFilter;
+                
+                return matchesSearch && matchesStatus && matchesType;
+            });
+            
+            // Sort complaints
+            filteredComplaints.sort((a, b) => {
+                const dateA = a.createdAt ? a.createdAt.toDate() : new Date(0);
+                const dateB = b.createdAt ? b.createdAt.toDate() : new Date(0);
+                
+                switch (sortBy) {
+                    case 'newest':
+                        return dateB - dateA;
+                    case 'oldest':
+                        return dateA - dateB;
+                    default:
+                        return dateB - dateA;
+                }
+            });
+            
+            displayComplaints(filteredComplaints);
+        }
+
+        // Navigation setup
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-links li');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetPage = this.getAttribute('data-page');
+                    if (targetPage) {
+                        window.location.href = targetPage;
+                    } else if (this.textContent.includes('Coming Soon')) {
+                        alert('This feature is coming soon!');
+                    }
+                });
+            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadComplaints();
+            setupNavigation();
+        });
+    </script>
+</body>
+</html>

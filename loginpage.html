@@ -15,6 +15,7 @@
             --light-blue-800: #0277BD;
             --light-blue-900: #01579B;
             --red-700: #D32F2F;
+            --orange-700: #F57C00;
             --grey-700: #616161;
             --white: #FFFFFF;
         }
@@ -116,6 +117,26 @@
             display: none;
         }
 
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-blocked {
+            background-color: #FFEBEE;
+            color: var(--red-700);
+            border: 1px solid #FFCDD2;
+        }
+
+        .status-suspended {
+            background-color: #FFF3E0;
+            color: var(--orange-700);
+            border: 1px solid #FFE0B2;
+        }
+
         .login-button {
             width: 100%;
             padding: 16px;
@@ -192,6 +213,18 @@
     <div class="login-card">
         <h1 class="login-title">Welcome Back!</h1>
 
+        <!-- Status Messages -->
+        <div class="status-message" id="blockedMessage">
+            <strong>Account Blocked</strong><br>
+            <span id="blockedReason"></span>
+        </div>
+
+        <div class="status-message" id="suspendedMessage">
+            <strong>Account Suspended</strong><br>
+            <span id="suspendedReason"></span><br>
+            <span id="suspendedUntil"></span>
+        </div>
+
         <form id="loginForm" autocomplete="on">
             <div class="form-group">
                 <div class="input-field">
@@ -232,6 +265,7 @@
     // Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
 
     // Your Firebase configuration
@@ -248,6 +282,7 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     const analytics = getAnalytics(app);
 
     // Get HTML elements
@@ -259,6 +294,11 @@
     const clearEmail = document.getElementById('clearEmail');
     const emailError = document.getElementById('emailError');
     const passwordError = document.getElementById('passwordError');
+    const blockedMessage = document.getElementById('blockedMessage');
+    const suspendedMessage = document.getElementById('suspendedMessage');
+    const blockedReason = document.getElementById('blockedReason');
+    const suspendedReason = document.getElementById('suspendedReason');
+    const suspendedUntil = document.getElementById('suspendedUntil');
 
     // Toggle password visibility
     togglePassword.addEventListener('click', (e) => {
@@ -277,7 +317,14 @@
         e.preventDefault();
         emailInput.value = '';
         emailError.style.display = 'none';
+        hideStatusMessages();
     });
+
+    // Hide status messages
+    function hideStatusMessages() {
+        blockedMessage.style.display = 'none';
+        suspendedMessage.style.display = 'none';
+    }
 
     // Email validation
     function validateEmail(email) {
@@ -285,16 +332,101 @@
         return re.test(String(email).toLowerCase());
     }
 
+    // Check user active status
+    async function checkUserActiveStatus(email) {
+        try {
+            const usersQuery = query(
+                collection(db, 'users'),
+                where('email', '==', email)
+            );
+            
+            const querySnapshot = await getDocs(usersQuery);
+            
+            if (querySnapshot.empty) {
+                return { status: 'not_found' };
+            }
+            
+            const userDoc = querySnapshot.docs[0];
+            const userData = userDoc.data();
+            
+            return {
+                status: 'found',
+                userData: userData,
+                userId: userDoc.id
+            };
+            
+        } catch (error) {
+            console.error('Error checking user status:', error);
+            return { status: 'error', error: error };
+        }
+    }
+
+    // Handle blocked user
+    function showBlockedUser(reason) {
+        blockedReason.textContent = reason || 'Your account has been permanently blocked by administrator.';
+        blockedMessage.style.display = 'block';
+        suspendedMessage.style.display = 'none';
+        
+        // Disable login button
+        loginButton.disabled = true;
+        loginButton.style.backgroundColor = '#BDBDBD';
+    }
+
+    // Handle suspended user
+    function showSuspendedUser(reason, blockedUntil) {
+        suspendedReason.textContent = reason || 'Your account has been temporarily suspended.';
+        
+        if (blockedUntil) {
+            const untilDate = blockedUntil.toDate();
+            const now = new Date();
+            
+            if (now < untilDate) {
+                const timeDiff = untilDate - now;
+                const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                const hoursLeft = Math.ceil(timeDiff / (1000 * 60 * 60));
+                
+                if (daysLeft > 1) {
+                    suspendedUntil.textContent = `Suspension ends in ${daysLeft} days (${untilDate.toLocaleDateString()})`;
+                } else if (hoursLeft > 1) {
+                    suspendedUntil.textContent = `Suspension ends in ${hoursLeft} hours`;
+                } else {
+                    suspendedUntil.textContent = `Suspension ends in less than an hour`;
+                }
+            } else {
+                // Suspension period ended
+                suspendedUntil.textContent = 'Suspension period has ended. Please try logging in again.';
+            }
+        } else {
+            suspendedUntil.textContent = 'Please contact support for more information.';
+        }
+        
+        suspendedMessage.style.display = 'block';
+        blockedMessage.style.display = 'none';
+        
+        // Disable login button
+        loginButton.disabled = true;
+        loginButton.style.backgroundColor = '#BDBDBD';
+    }
+
+    // Enable login button
+    function enableLoginButton() {
+        loginButton.disabled = false;
+        loginButton.style.backgroundColor = '';
+        hideStatusMessages();
+    }
+
     // Form submission handler
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const email = emailInput.value.trim();
         const password = passwordInput.value;
 
-        // Reset error messages
+        // Reset error messages and status
         emailError.style.display = 'none';
         passwordError.style.display = 'none';
+        hideStatusMessages();
+        enableLoginButton();
 
         let isValid = true;
 
@@ -320,42 +452,74 @@
             return;
         }
 
+        // Check for admin credentials
+        if (email === "quickpick@admin.com" && password === "quickpick") {
+            alert("Welcome, Admin!");
+            window.location.href = "adminpage.html";
+            return;
+        }
+
         // Show loading state
         loginButton.innerHTML = '<div class="spinner"></div>';
         loginButton.disabled = true;
 
-        // Call Firebase authentication
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Login successful
-                const user = userCredential.user;
-                alert('Login successful! Welcome, ' + user.email);
-                // Redirect to homepage
-                window.location.href = "homepage.html";
-            })
-            .catch((error) => {
-                // Login failed
-                let errorMessage = 'An error occurred. Please try again.';
-                switch (error.code) {
-                    case 'auth/invalid-email':
-                    case 'auth/user-not-found':
-                    case 'auth/wrong-password':
-                        errorMessage = 'Invalid email or password.';
-                        break;
-                    case 'auth/too-many-requests':
-                        errorMessage = 'Too many failed login attempts. Please try again later.';
-                        break;
-                    default:
-                        console.error('Firebase Auth Error:', error.message);
-                }
-                alert('Login failed: ' + errorMessage);
+        try {
+            // First check user status in Firestore
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('email', '==', email));
+            const querySnapshot = await getDocs(q);
 
-                // Re-enable button and show original text
-                loginButton.innerHTML = '<span>LOG IN</span>';
-                loginButton.disabled = false;
-            });
+            if (!querySnapshot.empty) {
+                const userDoc = querySnapshot.docs[0];
+                const userData = userDoc.data();
+
+                // Check status field
+                if (userData.status === 'blocked') {
+                    loginButton.innerHTML = '<span>LOG IN</span>';
+                    alert('Your account has been blocked. Please contact support.');
+                    return;
+                }
+
+                if (userData.status === 'suspended') {
+                    loginButton.innerHTML = '<span>LOG IN</span>';
+                    alert('Your account is currently suspended. Please try again later.');
+                    return;
+                }
+            }
+
+            // If status is okay, proceed with login
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            
+            // Login successful
+            alert('Login successful! Welcome, ' + userCredential.user.email);
+            window.location.href = "homepage.html";
+            
+        } catch (error) {
+            // Login failed
+            let errorMessage = 'An error occurred. Please try again.';
+            
+            switch (error.code) {
+                case 'auth/invalid-email':
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                    errorMessage = 'Invalid email or password.';
+                    break;
+                case 'auth/too-many-requests':
+                    errorMessage = 'Too many failed login attempts. Please try again later.';
+                    break;
+                default:
+                    console.error('Firebase Auth Error:', error.message);
+            }
+            
+            alert('Login failed: ' + errorMessage);
+            loginButton.innerHTML = '<span>LOG IN</span>';
+            loginButton.disabled = false;
+        }
     });
+
+    // Reset status messages when user starts typing
+    emailInput.addEventListener('input', hideStatusMessages);
+    passwordInput.addEventListener('input', hideStatusMessages);
 </script>
 </body>
-
 </html>
