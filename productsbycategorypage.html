@@ -352,13 +352,13 @@
     <div class="container">
         <!-- Page Header -->
         <div class="page-header">
-            <a href="categorypage.html class="back-button">
-                <i class="fas fa-arrow-left"></i>
-                Back to Categories
-            </a>
-            <h1 class="page-title" id="categoryTitle">Products</h1>
-            <div style="width: 120px;"></div> <!-- Spacer for alignment -->
-        </div>
+            <a href="categorypage.html" class="back-button" id="back-link">
+                 <i class="fas fa-arrow-left"></i>
+                 Back to Categories
+             </a>
+             <h1 class="page-title" id="categoryTitle">Products</h1>
+             <div style="width: 120px;"></div> <!-- Spacer for alignment -->
+         </div>
 
         <!-- Filters -->
         <div class="filters">
@@ -395,11 +395,11 @@
     
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-        <a class="nav-item" id="home-nav">
+        <a class="nav-item" id="home-nav" href="homepage.html">
             <span class="material-icons nav-icon">home</span>
             <span>Home</span>
         </a>
-        <a class="nav-item" id="category-nav">
+        <a class="nav-item" id="category-nav" href="categorypage.html">
             <span class="material-icons nav-icon">category</span>
             <span>Category</span>
         </a>
@@ -407,11 +407,11 @@
             <span class="material-icons nav-icon">shopping_cart</span>
             <span>Cart</span>
         </a>
-        <a class="nav-item" id="profile-nav">
-            <span class="material-icons nav-icon">person</span>
-            <span>Profile</span>
-        </a>
-    </div>
+        <a class="nav-item" id="profile-nav" href="profilepage.html" role="link" aria-label="Profile">
+             <span class="material-icons nav-icon">person</span>
+             <span>Profile</span>
+         </a>
+     </div>
     
     <script>
         // =========================================================================
@@ -620,27 +620,32 @@
         sortSelect.addEventListener('change', sortAndFilterProducts);
         availabilitySelect.addEventListener('change', sortAndFilterProducts);
 
-        // Back button functionality
+        // Back arrow and "Back to Categories" link -> categorypage.html
         document.getElementById('back-btn').onclick = function() {
             window.location.href = "categorypage.html";
         };
+        const backLink = document.getElementById('back-link');
+        if (backLink) {
+            // anchor already has correct href; keep as-is for normal navigation
+            backLink.addEventListener('click', function(){ /* no-op fallback */ });
+        }
 
-        // Bottom navigation functionality
-        document.getElementById('home-nav').addEventListener('click', function() {
-            window.location.href = "homepage.html";
-        });
-        
-        document.getElementById('category-nav').addEventListener('click', function() {
+        // Category bottom nav -> categorypage.html
+        document.getElementById('category-nav').addEventListener('click', function(e) {
             window.location.href = "categorypage.html";
         });
         
-        document.getElementById('cart-nav').addEventListener('click', function() {
-            window.location.href = "cart.html";
-        });
-        
-        document.getElementById('profile-nav').addEventListener('click', function() {
-            window.location.href = "profile.html";
-        });
+        // Profile nav -> profilepage.html (anchor has href; JS fallback)
+        const profileNav = document.getElementById('profile-nav');
+        if (profileNav) {
+            profileNav.addEventListener('click', function(e) {
+                // allow normal anchor behavior; fallback to JS if needed
+                if (!this.getAttribute('href')) return;
+                // Uncomment next two lines to force JS navigation instead of relying on href:
+                // e.preventDefault();
+                // window.location.href = this.getAttribute('href');
+            });
+        }
 
         // =========================================================================
         // Initialize Application
@@ -649,5 +654,4 @@
         document.addEventListener('DOMContentLoaded', fetchCategoryAndProducts);
     </script>
 </body>
-
 </html>
